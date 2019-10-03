@@ -10,72 +10,42 @@ import getopt
 import glob
 import json
 import math
-import operator
 import os
-import string
 import subprocess
 import sys
 import time
 import yaml
 
 NAME = "HEPscore"
-VER = "0.64"
+VER = "0.63"
 DEBUG = False
 
 CONF = """
 hepscore_benchmark:
+  name: HEPscore19
+  version: 0.31
+  repetitions: 3  # number of repetitions of the same benchmark
+  reference_machine: 'Intel Core i5-4590 @ 3.30GHz - 1 Logical Core'
+  method: geometric_mean # or any other algorithm
+  registry: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+  scaling: 10
   benchmarks:
-    .alice-gen-sim-bmk:
-      ref_scores:
-        gen-sim: 1
-      scorekey: wl-scores
-      #events: 1
-      version: v0.16
-    atlas-gen-bmk:
-      ref_scores:
-        gen: 207.6
-      scorekey: wl-scores
-      threads: 1
-      version: v1.1
     atlas-sim-bmk:
-      ref_scores:
-        sim: 0.028
-      scorekey: wl-scores
-      threads: 4
-      #events: 3
       version: v1.0
-    cms-gen-sim-bmk:
-      ref_scores:
-        gen-sim: 0.362
       scorekey: wl-scores
-      #events: 4
-      version: v1.0
-    cms-digi-bmk:
-      ref_scores:
-        digi: 1.94
-      scorekey: wl-scores
-      #events: 20
-      version: v1.0
+      ref_scores: { sim: 0.0052 }
     cms-reco-bmk:
-      ref_scores:
-        reco: 1.117
-      scorekey: wl-scores
-      #events: 3
       version: v1.0
+      scorekey: wl-scores
+      ref_scores: { reco: 0.1625 }
     lhcb-gen-sim-bmk:
       version: v0.12
-      refscore: 41.32
+      refscore: 7.1811
       scorekey: throughput_score
       subkey: 'GENSIM0 (evts per wall msec, including 1st evt)'
       debug: false
-      #events: 5
-  method: geometric_mean
-  name: HEPscore19
-  reference_machine: "bmk16-cc7-7xc9mygbzq"
-  registry: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
-  repetitions: 3
-  scaling: 10
-  version: 0.3
+      events:
+      threads:
 """
 
 
@@ -86,7 +56,8 @@ def help():
     namel = NAME.lower() + ".py"
 
     print(NAME + " Benchmark Execution - Version " + VER)
-    print(namel + " {-s|-d} [-v] [-V] [-y] [-o OUTFILE] [-f CONF] OUTDIR")
+    print(namel + " {-s|-d} [-v] [-V] [-y] [-c NCOPIES] [-o OUTFILE] "
+          "[-f CONF] OUTDIR")
     print(namel + " -h")
     print(namel + " -p [-f CONF]")
     print("Option overview:")
@@ -95,6 +66,8 @@ def help():
           "benchmark scores")
     print("-d           Run benchmark containers in Docker")
     print("-s           Run benchmark containers in Singularity")
+    print("-c           Set the sub-benchmark NCOPIES parameter (default: "
+          "autodetect)")
     print("-f           Use specified YAML configuration file (instead of "
           "built-in)")
     print("-o           Specify an alternate summary output file location")
@@ -123,7 +96,7 @@ def debug_print(dstring, newline):
 
 def proc_results(benchmark, rpath, verbose, conf):
 
-    results = {}
+    results = []
     fail = False
     overall_refscore = 1.0
     bench_conf = conf['benchmarks'][benchmark]
@@ -154,11 +127,11 @@ def proc_results(benchmark, rpath, verbose, conf):
         jfile.close()
 
         jscore = json.loads(line)
-        runstr = 'run' + str(i)
-        if runstr not in bench_conf:
-            bench_conf[runstr] = {}
-        bench_conf[runstr]['report'] = jscore
-
+        try:
+            bench_conf['run' + str(i)]['report'] = jscore
+        except Exception:
+            print('problem, bench_conf is %s' % json.dumps(bench_conf))
+            raise
         try:
             if 'ref_scores' not in bench_conf.keys():
                 if 'subkey' in bench_conf.keys():
@@ -181,47 +154,21 @@ def proc_results(benchmark, rpath, verbose, conf):
                       "The retrieved json report contains\n%s" % jscore)
                 fail = True
 
-        if not fail:
-            results[i] = score
+        i = i + 1
 
+        if not fail:
+            results.append(score)
             if verbose:
                 print(" " + str(score))
 
-        i = i + 1
-
-    if len(results) == 0:
-        print("\nNo results: fail")
+    if fail:
         return(-1)
 
     if len(results) != runs:
-        fail = True
         print("\nError: missing json score file for one or more runs")
+        return(-1)
 
-    if fail:
-        if 'allow_fail' not in conf.keys() or conf['allow_fail'] is False:
-            return(-1)
-
-    final_result, final_run = median_tuple(results)
-
-#   Insert wl-score from chosen run
-    if 'wl-scores' not in conf:
-        conf['wl-scores'] = {}
-    conf['wl-scores'][benchmark] = {}
-
-    if 'ref_scores' in bench_conf.keys():
-        for sub_bmk in bench_conf['ref_scores'].keys():
-            if len(results) % 2 != 0:
-                runstr = 'run' + str(final_run)
-                debug_print("Median selected run " + runstr, True)
-                conf['wl-scores'][benchmark][sub_bmk] = \
-                    bench_conf[runstr]['report']['wl-scores'][sub_bmk]
-            else:
-                avg_names = ['run' + str(rv) for rv in final_run]
-                sum = 0
-                for runstr in avg_names:
-                    sum = sum + \
-                        bench_conf[runstr]['report']['wl-scores'][sub_bmk]
-                conf['wl-scores'][benchmark][sub_bmk] = sum / 2
+    final_result = median(results)
 
     if len(results) > 1 and verbose:
         print(" Median: " + str(final_result))
@@ -229,7 +176,172 @@ def proc_results(benchmark, rpath, verbose, conf):
     return(final_result)
 
 
-def run_benchmark(benchmark, cm, output, verbose, conf):
+def get_image_path(registry,bmk_name,version):
+    image = '%s/%s:%s' % (registry, bmk_name, version)
+    return image.replace('//','/')
+
+def run_workload(bmk_name, bmk_conf, outputdir, nruns=1, mode='docker',
+                 registry='gitlab-registry.cern.ch/hep-benchmarks/hep-workloads',
+                 verbose=False, glcopies=1):
+    """Execute a specific reference workload.
+
+    bmk_name   :   the bmk_name in the configuration
+    bmk_conf   :   the specific configuration of a given workloads
+                  as from config
+    outputdir :   the output directory that is bind mount to the
+                  dir /results in the container
+    nruns     :   number of runs (default 1)
+    mode      :   docker or singularity
+    registry  :   image registry
+    verbose   :   sets the debug verbosity of the wl container
+    glcopies    : the number of copies of WL to be spawn 
+                  defined at global level
+    """
+    print('bmk_name   : %s' % bmk_name)
+    print('bmk_conf   : %s' % bmk_conf)
+    print('outputdir : %s' % outputdir)
+    print('nruns     : %s' % nruns)
+    print('mode      : %s' % mode)
+    print('registry  : %s' % registry)
+    print('verbose   : %s' % verbose)
+    print('copies    : %s' % glcopies)
+
+    #benchmark_complete = 'registry + '/' + bmk_name +\
+    #    ':' + bench_conf['version'] + options_string
+
+    if 'version' in bmk_conf.keys():
+        image_name = get_image_path(registry,bmk_name,bmk_conf['version'])
+    else:
+        print('Error: image version not specified')
+        raise Exception
+
+    # Retrieve the configuration specific to the benchmark
+    print('bmk_conf is %s' % bmk_conf)
+    options_string = check_bmk_options(bmk_conf, glcopies)
+    
+    for i in range(nruns):
+        if verbose:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+        run_dir = outputdir + '/' + bmk_name + '/run_%d' %i
+        print('run_dir is ' + run_dir)
+        do_single_run(mode, image_name, options_string, run_dir)
+
+def do_single_run(mode, image_name, options_string, run_dir):
+    '''Execute the single run of a WL execution.
+
+    Add start and end time in the directory, so that results can be generated again
+    mode :
+    image_name: 
+    option_string:
+    run_dir: 
+    '''
+
+    commands = {"docker":
+                "docker run --rm --network=host -v %s:/results %s" % (run_dir,image_name),
+                "singularity":
+                "singularity run -B %s:/results docker://%s" % (run_dir,image_name)
+            }
+
+
+    log_file = run_dir + "/workload.stdout"
+
+    #N.B. the -W forces the container to write in the speficied directory
+    command_string = '%s -W %s' % (commands[mode], options_string)
+    command = ' '.join(command_string.split()).split() # This is used to remove multiple whitespaces 
+    print("Running  %s " % command)
+    debug_print("Running %s\n" % command, True)
+ 
+    starttime = time.time()
+    try:
+        #This is needed to store the log file in the same dir
+        cmdf = subprocess.Popen(['mkdir', '-p', run_dir],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        cmdf.wait()
+        cmdf = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except Exception as e:
+        print("\nError: failure to execute: " + command_string)
+        print(e)
+        endtime = time.time()
+        write_times(starttime, endtime, run_dir)
+        return(-1)
+
+    # store the stdout in a file in the same wl dir
+    try:
+        lfile = open(log_file, mode='a')
+    except Exception:
+        print("\nError: failure to open " + log_file)
+        return(-1)
+
+    line = cmdf.stdout.readline()
+    while line:
+        lfile.write(line)
+        lfile.flush()
+        line = cmdf.stdout.readline()
+
+    cmdf.wait()
+    lfile.close()
+        
+    # It is time to write the start and end time
+    endtime = time.time()
+    write_times(starttime, endtime, run_dir)
+
+    if cmdf.returncode != 0:
+        print(("\nError: running " + command_string +
+               " failed.  Exit status " + str(cmdf.returncode) + "\n"))
+        return -1
+
+    return 0
+
+def write_times(startime, endtime, run_dir):
+    with open(run_dir + '/startime', 'w') as f:
+        f.write('%s' % startime)
+    with open(run_dir + '/endtime', 'w') as f:
+        f.write('%s' % endtime)
+
+
+def check_bmk_options(bmk_conf, glcopies):
+    """check options and report the option string"""
+
+    bmk_conf_keys = set(bmk_conf.keys())
+    # Allowed options are
+    bmk_allowed_options = {'debug': ('-d', bool),
+                           'threads': ('-t', int),
+                           'events': ('-e', int),
+                           'copies': ('-c', int)}
+
+    # is_number_of_copies_enforced = True
+    options_string = ''
+    for opt in sorted(set(bmk_allowed_options.keys()
+                          ).intersection(bmk_conf_keys)):
+        # check that the value matches the expected data type
+        if type(bmk_conf[opt]) != bmk_allowed_options[opt][1]:
+            continue
+        # if the value is False, skip
+        if bmk_conf[opt] is False:
+            continue
+        options_string = options_string + ' ' + bmk_allowed_options[opt][0]
+        # if the type is not boolean append the  value
+        if type(bmk_conf[opt]) != bool:
+                options_string = options_string + ' ' + str(bmk_conf[opt])
+
+    if 'copies' not in bmk_conf_keys and glcopies > 1:
+        options_string = options_string + ' ' + '-c %d ' % glcopies
+
+    return options_string
+
+
+def run_benchmark(benchmark, cm, output, verbose, copies, conf):
+
+    print('\nbenchmark is %s' % benchmark)
+    print('\ncm %s' % cm)
+    print('\noutput %s' % output)
+    print('\nverbose %s' % verbose)
+    print('\ncopies %s' % copies)
+    print('\nconf %s\n' % conf)
 
     commands = {'docker': "docker run --rm --network=host -v " + output +
                 ":/results ",
@@ -238,9 +350,12 @@ def run_benchmark(benchmark, cm, output, verbose, conf):
 
     bench_conf = conf['benchmarks'][benchmark]
     bmark_keys = bench_conf.keys()
-    bmk_options = {'debug': '-d', 'threads': '-t', 'events': '-e',
-                   'copies': '-c'}
-    options_string = ""
+    bmk_options = {'debug': '-d', 'threads': '-t', 'events': '-e'}
+
+    if copies != 1:
+        options_string = " -c " + str(copies)
+    else:
+        options_string = ""
 
     runs = int(conf['repetitions'])
     log = output + "/" + conf['name'] + ".log"
@@ -271,6 +386,8 @@ def run_benchmark(benchmark, cm, output, verbose, conf):
     command = command_string.split(' ')
     sys.stdout.write("Running  %s " % command)
 
+    debug_print("Running " + str(command), True)
+    raise Exception  # FIXME
     for i in range(runs):
         if verbose:
             sys.stdout.write('.')
@@ -282,7 +399,8 @@ def run_benchmark(benchmark, cm, output, verbose, conf):
         starttime = time.time()
         bench_conf[runstr]['start_at'] = time.ctime(starttime)
         try:
-            cmdf = subprocess.Popen(command, stdout=subprocess.PIPE,
+            cmdf = subprocess.Popen(command,
+                                    stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
         except Exception:
             print("\nError: failure to execute: " + command_string)
@@ -309,11 +427,9 @@ def run_benchmark(benchmark, cm, output, verbose, conf):
         if cmdf.returncode != 0:
             print(("\nError: running " + benchmark + " failed.  Exit status " +
                   str(cmdf.returncode) + "\n"))
-
-            if 'allow_fail' not in conf.keys() or conf['allow_fail'] is False:
-                lfile.close()
-                proc_results(benchmark, output, verbose, conf)
-                return(-1)
+            lfile.close()
+            proc_results(benchmark, output, verbose, conf)
+            return(-1)
 
     lfile.close()
 
@@ -446,18 +562,17 @@ def parse_conf():
     return(dat['hepscore_benchmark'])
 
 
-def median_tuple(vals):
+def median(vals):
 
-    sorted_vals = sorted(vals.items(), key=operator.itemgetter(1))
+    if len(vals) == 1:
+        return(vals[0])
 
-    med_ind = len(sorted_vals) / 2
-    if len(sorted_vals) % 2 == 1:
-        return(sorted_vals[med_ind][::-1])
+    vals.sort()
+    med_ind = len(vals) / 2
+    if len(vals) % 2 == 1:
+        return(vals[med_ind])
     else:
-        val1 = sorted_vals[med_ind - 1][1]
-        val2 = sorted_vals[med_ind][1]
-        return(((val1 + val2) / 2.0), (sorted_vals[med_ind - 1][0],
-                                       sorted_vals[med_ind][0]))
+        return((vals[med_ind] + vals[med_ind - 1]) / 2.0)
 
 
 def geometric_mean(results):
@@ -478,10 +593,11 @@ def main():
     verbose = False
     cec = ""
     outobj = {}
+    copies = 1
     opost = "json"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hpvVdsyf:o:')
+        opts, args = getopt.getopt(sys.argv[1:], 'hpvVdsyf:c:o:')
     except getopt.GetoptError as err:
         print("\nError: " + str(err) + "\n")
         help()
@@ -503,6 +619,12 @@ def main():
             read_conf(arg)
         elif opt == '-y':
             opost = 'yaml'
+        elif opt == '-c':
+            try:
+                copies = int(arg)
+            except ValueError:
+                print("\nError: argument to -c must be an integer\n")
+                sys.exit(1)
         elif opt == '-o':
             outfile = arg
         elif opt == '-s' or opt == '-d':
@@ -545,22 +667,26 @@ def main():
     curtime = time.asctime()
 
     confobj['environment'] = {'system': sysname, 'date': curtime,
-                              'container_exec': cec}
+                              'container_exec': cec, 'ncopies': copies}
 
     print(confobj['name'] + " Benchmark")
     print("Version: " + str(confobj['version']))
+    if copies > 0:
+        print("Sub-benchmark NCOPIES: " + str(copies))
     print("System: " + sysname)
     print("Container Execution: " + cec)
     print("Registry: " + confobj['registry'])
     print("Output: " + output)
     print("Date: " + curtime + "\n")
 
-    confobj['wl-scores'] = {}
-
     results = []
     res = 0
-    for benchmark in confobj['benchmarks']:
-        res = run_benchmark(benchmark, cec, output, verbose, confobj)
+    for benchmark in confobj['benchmarks'].keys():
+        run_workload(benchmark, confobj['benchmarks'][benchmark], output,
+                     nruns=confobj['repetitions'], mode=cec,
+                     registry=confobj['registry'], verbose=verbose,
+                     glcopies=copies)
+        res = run_benchmark(benchmark, cec, output, verbose, copies, confobj)
         if res < 0:
             break
         results.append(res)
@@ -568,9 +694,7 @@ def main():
 # Only compute a final score if all sub-benchmarks reported a score
     if res >= 0:
         method = allowed_methods[confobj['method']]
-        fres = method(results)
-        if 'scaling' in confobj.keys():
-            fres = fres * confobj['scaling']
+        fres = method(results) * confobj['scaling']
 
         print("\nFinal result: " + str(fres))
         confobj['score'] = fres
