@@ -171,7 +171,7 @@ def proc_results(benchmark, rpath, verbose, conf):
                     sub_score = sub_score / bench_conf['ref_scores'][sub_bmk]
                     sub_results.append(sub_score)
                 score = geometric_mean(sub_results)
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, TypeError):
             if not fail:
                 print("\nError: score not reported for one or more runs." +
                       "The retrieved json report contains\n%s" % jscore)
