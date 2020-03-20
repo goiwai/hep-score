@@ -144,18 +144,19 @@ def proc_results(benchmark, rpath, verbose, conf):
     i = 0
     for gpath in gpaths:
         debug_print("Opening file " + gpath, False)
+        jscore = ""
 
         jfile = open(gpath, mode='r')
         line = jfile.readline()
         jfile.close()
 
-        jscore = json.loads(line)
-        runstr = 'run' + str(i)
-        if runstr not in bench_conf:
-            bench_conf[runstr] = {}
-        bench_conf[runstr]['report'] = jscore
-
         try:
+            jscore = json.loads(line)
+            runstr = 'run' + str(i)
+            if runstr not in bench_conf:
+                bench_conf[runstr] = {}
+            bench_conf[runstr]['report'] = jscore
+
             if 'ref_scores' not in bench_conf.keys():
                 if 'subkey' in bench_conf.keys():
                     subkey = bench_conf['subkey']
@@ -171,10 +172,12 @@ def proc_results(benchmark, rpath, verbose, conf):
                     sub_score = sub_score / bench_conf['ref_scores'][sub_bmk]
                     sub_results.append(sub_score)
                 score = geometric_mean(sub_results)
-        except (KeyError, ValueError, TypeError):
+        except Exception:
             if not fail:
-                print("\nError: score not reported for one or more runs." +
-                      "The retrieved json report contains\n%s" % jscore)
+                print("\nError: score not reported for one or more runs.")
+                if len(jscore) > 0:
+                    print("The retrieved json report contains\n%s" % jscore)
+
                 fail = True
 
         if not fail:
