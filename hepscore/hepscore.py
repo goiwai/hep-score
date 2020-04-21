@@ -623,7 +623,7 @@ def main():
         confobj['score'] = fres
         confobj['status'] = "success"
     else:
-        confobj['ERROR'] = benchmark
+        confobj['error'] = benchmark
         confobj['score'] = -1
         confobj['status'] = "failed"
 
