@@ -621,11 +621,11 @@ def main():
 
         print("\nFinal result: " + str(fres))
         confobj['score'] = fres
-        confobj['status'] = "SUCCESS"
+        confobj['status'] = "success"
     else:
         confobj['ERROR'] = benchmark
         confobj['score'] = -1
-        confobj['status'] = "FAIL"
+        confobj['status'] = "failed"
 
     if not outfile:
         outfile = output + '/' + confobj['name'] + '.' + opost
