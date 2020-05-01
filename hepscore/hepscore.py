@@ -235,7 +235,8 @@ def check_userns():
     try:
         cg = open(dockerenv, mode='r')
         cg.close()
-        debug_print(self.NAME + " running inside of Docker.  Not enabling user namespaces.")
+        debug_print(self.NAME + " running inside of Docker.  "
+                    "Not enabling user namespaces.")
         return False
     except Exception:
         debug_print(self.NAME + " not running inside Docker.")
