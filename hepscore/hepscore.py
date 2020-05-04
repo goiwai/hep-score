@@ -238,10 +238,10 @@ def check_userns():
         cg = open(dockerenv, mode='r')
         cg.close()
         debug_print(NAME + " running inside of Docker.  "
-                    "Not enabling user namespaces.")
+                    "Not enabling user namespaces.", False)
         return False
     except Exception:
-        debug_print(NAME + " not running inside Docker.")
+        debug_print(NAME + " not running inside Docker.", False)
 
     try:
         mf = open(proc_muns, mode='r')
