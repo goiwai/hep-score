@@ -229,7 +229,19 @@ def proc_results(benchmark, rpath, verbose, conf):
 
 
 def check_userns():
+    global NAME
+
     proc_muns = "/proc/sys/user/max_user_namespaces"
+    dockerenv = "/.dockerenv"
+
+    try:
+        cg = open(dockerenv, mode='r')
+        cg.close()
+        debug_print(NAME + " running inside of Docker.  "
+                    "Not enabling user namespaces.", False)
+        return False
+    except Exception:
+        debug_print(NAME + " not running inside Docker.", False)
 
     try:
         mf = open(proc_muns, mode='r')
