@@ -2,48 +2,58 @@ hepscore_benchmark:
   benchmarks:
     atlas-gen-bmk:
       ref_scores:
-        gen: 207.6
+        gen: 384
       scorekey: wl-scores
       threads: 1
-      version: v1.1
+      events: 200
+      version: v1.2
     atlas-sim-bmk:
       ref_scores:
-        sim: 0.028
+        sim: 0.0641
       scorekey: wl-scores
       threads: 4
-      version: v1.0
-    atlas-digi-reco-bmk:
+      events: 10
+      version: v1.1
+    .atlas-digi-reco-bmk:
       ref_scores:
-        digi-reco: 1.211
+        digi-reco: 2.39
       scorekey: wl-scores
       threads: 4
       events: 30
       version: v1.0    
     cms-gen-sim-bmk:
       ref_scores:
-        gen-sim: 0.362
+        gen-sim: 0.726
       scorekey: wl-scores
-      version: v1.0
+      threads: 4
+      events: 20
+      version: v1.2
     cms-digi-bmk:
       ref_scores:
-        digi: 1.94
+        digi: 3.58
       scorekey: wl-scores
-      version: v1.0
+      threads: 4
+      events: 50
+      version: v1.3
     cms-reco-bmk:
       ref_scores:
-        reco: 1.117
+        reco: 2.196
       scorekey: wl-scores
-      version: v1.0
+      threads: 4
+      events: 50
+      version: v1.2
     lhcb-gen-sim-bmk:
       ref_scores:
-        gen-sim: 41.32
+        gen-sim: 90.29
       scorekey: wl-scores
+      threads: 1
+      events: 5
       version: v0.15
   method: geometric_mean
   name: HEPscore19
-  reference_machine: "bmk16-cc7-7xc9mygbzq"
+  reference_machine: "CPU Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz"
   registry: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
   repetitions: 3
-  scaling: 1
+  scaling: 355
   container_exec: docker
-  version: 0.3
+  version: 0.x
