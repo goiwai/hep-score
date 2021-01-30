@@ -16,13 +16,14 @@ import math
 import multiprocessing
 import operator
 import os
+from pathlib import Path
 import re
 import shutil
 import stat
 import subprocess
 import sys
 import time
-import oyaml as yaml
+import yaml
 from hepscore import __version__
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,7 @@ class HEPscore(object):
     clean_files = False
     userns = False
 
-    scache = ""
+    scache = None
     registry = ""
     results = []
     weights = []
@@ -89,16 +90,15 @@ class HEPscore(object):
 
     def __init__(self, config, resultsdir):
         """Set & validate config, enable logging."""
-        self.resultsdir = resultsdir
+        self.resultsdir = Path(resultsdir)
         self.confobj = config['hepscore_benchmark']
         self.settings = self.confobj['settings']
 
         if 'container_exec' in self.settings:
-            if self.settings['container_exec'] in (
-                    "singularity", "docker"):
+            if self.settings['container_exec'] in ("singularity", "docker"):
                 self.cec = self.settings['container_exec']
             else:
-                logger.error("%s not understood. Stopping", self.settings['container_exec'])
+                logger.critical("%s not understood. Stopping", self.settings['container_exec'])
                 sys.exit(1)
         else:
             logger.warning("Container not specified on commandline or in config - assuming %s",
@@ -107,7 +107,7 @@ class HEPscore(object):
         if 'clean' in self.confobj.get('options', {}):
             self.clean = self.confobj['options']['clean']
             if self.cec == 'singularity':
-                self.scache = resultsdir + '/scache'
+                self.scache = self.resultsdir.joinpath('scache')
         if 'clean_files' in self.confobj.get('options', {}):
             self.clean_files = self.confobj['options']['clean_files']
 
@@ -120,30 +120,25 @@ class HEPscore(object):
 
     def _gen_reg_path(self, reg_url=None):
 
-        valid_uris = ['docker', 'shub', 'dir']
+        valid_uris = ['docker://', 'shub://', 'dir://']
         if reg_url is None:
             try:
                 reg_url = self.confobj['settings']['registry']
             except KeyError:
-                logger.error("Registry undefined")
+                logger.critical("Settings:Registry:<val> undefined.")
                 sys.exit(1)
 
-        found_valid = False
         for uri in valid_uris:
-            if reg_url.find(uri + '://') == 0:
-                found_valid = True
-                reg_path = reg_url[len(uri) + 3:]
+            if uri in reg_url:
                 break
-
-        if not found_valid:
-            logger.error("Invalid URI specification in registry path: %s", reg_url)
+        else:
+            logger.critical("Invalid URI specification in registry path: %s", reg_url)
             sys.exit(1)
 
-        # uri, reg_path possibly unbound
-        if self.cec == 'docker' and uri != 'docker':
-            logger.error("Only docker registry URI (docker://) supported for Docker runs.")
+        if self.cec == 'docker' and uri != 'docker://':
+            logger.critical("Only docker registry URI (docker://) supported for Docker runs.")
             sys.exit(1)
-        return reg_path if (self.cec == 'docker' or uri == 'dir') else reg_url
+        return reg_url
 
     def _proc_results(self, benchmark):
 
@@ -273,7 +268,7 @@ class HEPscore(object):
                 ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ret.wait()
             elif self.cec == 'singularity' and self.scache != "":
-                if os.path.abspath(self.scache) != '/' and self.scache.find(self.resultsdir) == 0:
+                if str(self.scache.resolve) != '/' and self.resultsdir in self.scache.parents:
                     logger.info("Removing temporary singularity cache %s", self.scache)
                     shutil.rmtree(self.scache)
                 else:
@@ -416,11 +411,11 @@ class HEPscore(object):
         benchmark_complete = benchmark_name + options_string
         self.confobj['settings']['replay'] = mock
 
-        if self.cec == 'singularity' and self.scache != "":
+        if self.cec == 'singularity' and self.scache:
             logger.info("Creating singularity cache %s", self.scache)
             try:
-                os.makedirs(self.scache)
-                os.environ['SINGULARITY_CACHEDIR'] = self.scache
+                self.scache.mkdir()
+                os.environ['SINGULARITY_CACHEDIR'] = str(self.scache)
             except Exception:
                 logger.error("Failed to create Singularity cache dir %s", self.scache)
 
@@ -428,12 +423,13 @@ class HEPscore(object):
             if successful_runs == runs:
                 break
 
-            runDir = self.resultsdir + "/" + benchmark[:-4] + "/run" + str(i)
-            logsFile = runDir + "/" + self.cec + "_logs"
+            runDir = self.resultsdir.joinpath(benchmark[:-4], "run" + str(i))
+            logsFile = runDir.joinpath(self.cec + "_logs")
 
             if self.confobj['settings']['replay'] is False:
-                os.makedirs(runDir)
+                runDir.mkdir()
                 if self.cec == 'docker':
+                    # TODO: convert to runDir.chmod()
                     os.chmod(runDir, stat.S_ISVTX | stat.S_IRWXU |
                              stat.S_IRWXG | stat.S_IRWXO)
 
@@ -459,6 +455,7 @@ class HEPscore(object):
                                             stderr=subprocess.STDOUT)
                 except Exception:
                     if self.cec == 'docker':
+                        # TODO: conver to runDir.chmod()
                         os.chmod(runDir, stat.S_IRWXU | stat.S_IRGRP |
                                  stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
@@ -484,6 +481,7 @@ class HEPscore(object):
                 cmdf.wait()
 
                 if self.cec == 'docker':
+                    # TODO: conver to runDir.chmod()
                     os.chmod(runDir, stat.S_IRWXU | stat.S_IRGRP |
                              stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
@@ -561,7 +559,7 @@ class HEPscore(object):
                 logger.warning('Could not determine core count')
 
     def write_output(self, outtype, outfile):
-
+        #TODO: Pathlib fixes
         if not outfile:
             outfile = self.resultsdir + '/' + self.confobj['settings']['name'] + '.' + outtype
 
@@ -569,6 +567,7 @@ class HEPscore(object):
         if outtype != outfile[-4:]:
             logging.error("%s output requested, but %s does not match!", outtype, outfile)
 
+        # TODO: Pathlib.suffix
         outobj = {}
         if outtype == 'yaml':
             outobj['hepscore_benchmark'] = self.confobj
@@ -578,19 +577,19 @@ class HEPscore(object):
             raise ValueError("outtype must be 'json' or 'yaml'")
 
         try:
+            # TODO: Test case for yaml encoding/ordering
             jfile = open(outfile, mode='w')
             if outtype == 'yaml':
-                jfile.write(yaml.safe_dump(outobj, encoding='utf-8',
-                                           allow_unicode=True).decode('utf-8'))
+                jfile.write(yaml.safe_dump(outobj, sort_keys=False))
             else:
                 jfile.write(json.dumps(outobj))
             jfile.close()
         except Exception:
-            logging.error("Failed to create summary output %s", outfile)
+            logger.critical("Failed to create summary output %s", outfile)
             sys.exit(2)
 
         if len(self.results) == 0 or self.results[-1] < 0:
-            logger.error("Results = %s.", self.results)
+            logger.critical("Results = %s.", self.results)
             sys.exit(2)
 
     def validate_conf(self):
@@ -601,12 +600,12 @@ class HEPscore(object):
 
         for k in hep_settings:
             if k not in self.confobj:
-                logger.error("Configuration: %s section must be defined", k)
+                logger.critical("Configuration: %s section must be defined", k)
                 sys.exit(1)
 
             for f in rsf[k]:
                 if f not in self.confobj[k]:
-                    logger.error("Configuration: %s must be specified in %s", f, k)
+                    logger.critical("Configuration: %s must be specified in %s", f, k)
                     sys.exit(1)
 
             if k == 'settings':
@@ -616,29 +615,30 @@ class HEPscore(object):
                             self.confobj[k][j]
                         if not reg_string[0].isalpha() or \
                                 re.match(r'^[a-zA-Z0-9:/\-_\.~]*$', reg_string) is None:
-                            logger.error("Configuration: illegal character in registry")
+                            logger.critical("Configuration: illegal character in registry")
                             sys.exit(1)
                     if j == 'method':
                         val = self.confobj[k][j]
                         if val != 'geometric_mean':
-                            logger.error("Configuration: only 'geometric_mean' method is "
-                                         "currently supported")
+                            logger.critical("Configuration: only 'geometric_mean' method is "
+                                            "currently supported")
                             sys.exit(1)
                     if j in ('repetitions', 'retries'):
                         val = self.confobj[k][j]
                         if (not isinstance(val, int)) or val < 0:
-                            logger.error("Configuration: '%s' configuration parameter must "
-                                         "be a positive integer", j)
+                            logger.critical("Configuration: '%s' configuration parameter must "
+                                            "be a positive integer", j)
                             sys.exit(1)
                     if j == 'scaling':
                         try:
                             float(self.confobj[k][j])
                         except ValueError:
-                            logger.error("Configuration: 'scaling' configuration parameter "
-                                         "must be a float")
+                            logger.critical("Configuration: 'scaling' configuration parameter "
+                                            "must be a float")
                             sys.exit(1)
 
         bcount = 0
+        bmk_req_options = ['version']
         for benchmark in list(self.confobj['benchmarks']):
             bmark_conf = self.confobj['benchmarks'][benchmark]
             bcount = bcount + 1
@@ -649,61 +649,60 @@ class HEPscore(object):
                 continue
 
             if re.match(r'^[a-zA-Z0-9\-_]*$', benchmark) is None:
-                logger.error("Configuration: illegal character in benchmark name %s", benchmark)
+                logger.critical("Configuration: illegal character in benchmark name %s", benchmark)
                 sys.exit(1)
 
             if benchmark.find('-') == -1:
-                logger.error("Configuration: expect at least 1 '-' character in benchmark name %s",
-                             benchmark)
+                logger.critical("Configuration: expect at least 1 '-' character in " \
+                                "benchmark name %s", benchmark)
                 sys.exit(1)
-
-            bmk_req_options = ['version']
 
             for k in bmk_req_options:
                 if k not in bmark_conf.keys():
-                    logger.error("Configuration: missing required benchmark option for %s - %s",
-                                 benchmark, k)
+                    logger.critical("Configuration: missing required benchmark option for %s - %s",
+                                    benchmark, k)
                     sys.exit(1)
 
             if 'weight' in bmark_conf.keys():
                 try:
                     float(bmark_conf['weight'])
                 except ValueError:
-                    logger.error("Configuration: invalid 'weight' specified: %s Must be a float",
-                                 bmark_conf['weight'])
+                    logger.critical("Configuration: invalid 'weight' specified: %s Must be a float",
+                                    bmark_conf['weight'])
+                    sys.exit(1)
 
             if 'ref_scores' in bmark_conf.keys():
                 for score in bmark_conf['ref_scores']:
                     try:
                         float(bmark_conf['ref_scores'][score])
                     except ValueError:
-                        logger.error("Configuration: ref_score %s is not a float for %s",
-                                     score, benchmark)
+                        logger.critical("Configuration: ref_score %s is not a float for %s",
+                                        score, benchmark)
                         sys.exit(1)
             else:
-                logger.error("Configuration: ref_scores missing for %s", benchmark)
+                logger.critical("Configuration: ref_scores missing for %s", benchmark)
                 sys.exit(1)
 
             if 'registry' in bmark_conf.keys():
                 # reg_string possibly unbound
                 if not reg_string[0].isalpha() or \
                         re.match(r'^[a-zA-Z0-9:/\-_\.~]*$', reg_string) is None:
-                    logger.error("Configuration: illegal character in registry")
+                    logger.critical("Configuration: illegal character in registry")
                     sys.exit(1)
 
         if bcount == 0:
-            logger.error("Configuration: no benchmarks specified")
+            logger.critical("Configuration: no benchmarks specified")
             sys.exit(1)
 
-        logger.debug("The parsed config is: %s", yaml.safe_dump(self.confobj))
+        logger.debug("The parsed config is: %s", yaml.safe_dump(self.confobj, sort_keys=False))
 
         return self.confobj
 
     def run(self, mock=False):
 
         # check rundir is empty
-        if os.listdir(self.resultsdir) and not mock:
-            logger.error("Results directory is not empty!")
+        if not any(self.resultsdir.iterdir()) and not mock:
+            logger.critical("Results directory is not empty!")
             sys.exit(2)
 
         # Creating a hash representation of the configuration object
