@@ -148,28 +148,26 @@ class HEPscore(object):
 
         benchmark_glob = benchmark.split('-')[:-1]
         benchmark_glob = '-'.join(benchmark_glob)
-
-        gpaths = sorted(glob.glob(self.resultsdir + "/" + benchmark_glob
-                                  + "/run*/" + benchmark_glob + "*/"
-                                  + benchmark_glob + "_summary.json"))
-        logger.debug("Looking for results in %s", gpaths)
+        
+        summary_jsons = self.resultsdir.glob(benchmark_glob + '/**/*_summary.json')
+        logger.debug("Looking for results in %s", summary_jsons)
         i = -1
-        for gpath in gpaths:
+        for summary_json in summary_jsons:
             i += 1
-            logger.debug("Opening file %s", gpath)
+            logger.debug("Opening file %s", summary_json)
 
             try:
-                with open(gpath, mode='r') as jfile:
+                with open(summary_json, mode='r') as jfile:
                     lines = jfile.read()
             except Exception:
-                logger.error("Failure reading from %s", gpath)
+                logger.error("Failure reading from %s", summary_json)
                 continue
 
             try:
                 jscore = ""
                 jscore = json.loads(lines)
             except Exception:
-                logger.error("Malformed JSON in %s", gpath)
+                logger.error("Malformed JSON in %s", summary_json)
                 continue
 
             json_required_keys = ['app', 'run_info', 'report']
@@ -349,7 +347,7 @@ class HEPscore(object):
         gpu_flag = ""
 
         runs = int(self.confobj['settings']['repetitions'])
-        log = self.resultsdir + "/" + self.confobj['settings']['name'] + ".log"
+        logfile_path = self.resultsdir.joinpath(self.confobj['settings']['name'] + ".log")
 
         if 'retries' in self.confobj['settings']:
             retries = int(self.confobj['settings']['retries'])
@@ -372,7 +370,7 @@ class HEPscore(object):
             bmark_registry = self._gen_reg_path(bench_conf['registry'])
             logger.info("Overriding registry for this container: %s", bmark_reg_url)
 
-        if self.clean_files is True:
+        if self.clean_files:
             options_string = " --mop all"
 
         if 'gpu' in bench_conf and bench_conf['gpu'] is True:
@@ -402,9 +400,9 @@ class HEPscore(object):
                     options_string = options_string + ' ' + option_arg
 
         try:
-            lfile = open(log, mode='a')
+            lfile = open(logfile_path, mode='a')
         except Exception:
-            logger.error("failure to open %s", log)
+            logger.error("failure to open %s", logfile_path)
             return -1
 
         benchmark_name = bmark_registry + '/' + benchmark + ':' + bench_conf['version']
@@ -429,13 +427,11 @@ class HEPscore(object):
             if self.confobj['settings']['replay'] is False:
                 runDir.mkdir()
                 if self.cec == 'docker':
-                    # TODO: convert to runDir.chmod()
-                    os.chmod(runDir, stat.S_ISVTX | stat.S_IRWXU |
-                             stat.S_IRWXG | stat.S_IRWXO)
+                    runDir.chmod(0o1777)
 
-            commands = {'docker': "docker run --rm --network=host -v " + runDir
+            commands = {'docker': "docker run --rm --network=host -v " + str(runDir)
                                   + ":/results " + gpu_flag,
-                        'singularity': "singularity run -C -B " + runDir + ":/results -B /tmp "
+                        'singularity': "singularity run -C -B " + str(runDir) + ":/results -B /tmp "
                                        + self._get_usernamespace_flag() + gpu_flag}
 
             command_string = commands[self.cec] + benchmark_complete
@@ -455,10 +451,7 @@ class HEPscore(object):
                                             stderr=subprocess.STDOUT)
                 except Exception:
                     if self.cec == 'docker':
-                        # TODO: conver to runDir.chmod()
-                        os.chmod(runDir, stat.S_IRWXU | stat.S_IRGRP |
-                                 stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-
+                        runDir.chmod(0o1777)
                     logger.error("failure to execute: %s", command_string)
                     bench_conf['run' + str(i)]['end_at'] = bench_conf['run' + str(i)]['start_at']
                     bench_conf['run' + str(i)]['duration'] = 0
@@ -481,10 +474,7 @@ class HEPscore(object):
                 cmdf.wait()
 
                 if self.cec == 'docker':
-                    # TODO: conver to runDir.chmod()
-                    os.chmod(runDir, stat.S_IRWXU | stat.S_IRGRP |
-                             stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-
+                    runDir.chmod(0o1777)
                 self._check_rc(cmdf.returncode)
                 if cmdf.returncode > 0:
                     logger.error("%s output logs:", self.cec)
@@ -558,16 +548,16 @@ class HEPscore(object):
                 self.confobj['score_per_core'] = -1
                 logger.warning('Could not determine core count')
 
-    def write_output(self, outtype, outfile):
-        #TODO: Pathlib fixes
+    def write_output(self, outtype, outfile=None):
+
         if not outfile:
-            outfile = self.resultsdir + '/' + self.confobj['settings']['name'] + '.' + outtype
+            outfile = self.resultsdir.joinpath(self.confobj['settings']['name'] + '.' + outtype)
+        outfile = Path(outfile)
 
         # check outfile is same type as outtype
-        if outtype != outfile[-4:]:
+        if outtype != outfile.suffix:
             logging.error("%s output requested, but %s does not match!", outtype, outfile)
 
-        # TODO: Pathlib.suffix
         outobj = {}
         if outtype == 'yaml':
             outobj['hepscore_benchmark'] = self.confobj
@@ -701,7 +691,7 @@ class HEPscore(object):
     def run(self, mock=False):
 
         # check rundir is empty
-        if not any(self.resultsdir.iterdir()) and not mock:
+        if any(self.resultsdir.iterdir()) and not mock:
             logger.critical("Results directory is not empty!")
             sys.exit(2)
 
