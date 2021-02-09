@@ -8,7 +8,6 @@
 # hepscore.py - HEPscore benchmark execution
 #
 
-import glob
 import hashlib
 import json
 import logging
@@ -19,7 +18,6 @@ import os
 from pathlib import Path
 import re
 import shutil
-import stat
 import subprocess
 import sys
 import time
@@ -156,10 +154,8 @@ class HEPscore(object):
         benchmark_glob = benchmark.split('-')[:-1]
         benchmark_glob = '-'.join(benchmark_glob)
 
-        summary_jsons = self.resultsdir.glob(benchmark_glob + '/**/*_summary.json')
-        logger.debug("Looking for results in %s", sorted(summary_jsons))
         i = -1
-        for summary_json in summary_jsons:
+        for summary_json in self.resultsdir.glob(benchmark_glob + '/**/*_summary.json'):
             i += 1
             logger.debug("Opening file %s", summary_json)
 
@@ -421,7 +417,7 @@ class HEPscore(object):
             logger.info("Creating singularity cache %s", self.scache)
             try:
                 self.scache.mkdir()
-                os.environ['SINGULARITY_CACHEDIR'] = self.scache
+                os.environ['SINGULARITY_CACHEDIR'] = str(self.scache)
             except Exception:
                 logger.error("Failed to create Singularity cache dir %s", self.scache)
 
@@ -483,8 +479,7 @@ class HEPscore(object):
                 cmdf.wait()
 
                 if self.cec == 'docker':
-                    os.chmod(runDir, stat.S_IRWXU | stat.S_IRGRP |
-                             stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                    runDir.chmod(0o1777)
 
                 self._check_rc(cmdf.returncode)
                 if cmdf.returncode > 0:
@@ -584,7 +579,7 @@ class HEPscore(object):
                 else:
                     output.write(json.dumps(outobj))
         except Exception:
-            logging.error("Failed to create summary output %s", outfile)
+            logger.error("Failed to create summary output %s", outfile)
             sys.exit(2)
 
         if len(self.results) == 0 or self.results[-1] < 0:
@@ -732,7 +727,7 @@ class HEPscore(object):
         self.confobj['app_info']['hepscore_ver'] = __version__
 
         if mock is True:
-            logging.info("NOTE: Replaying prior results")
+            logger.info("NOTE: Replaying prior results")
 
         res = 0
         have_failure = False
