@@ -7,6 +7,7 @@ from hepscore.hepscore import HEPscore
 import json
 import logging
 import os
+from pathlib import Path
 import yaml
 # from parameterized import parameterized
 import shutil
@@ -37,7 +38,7 @@ class Test_Constructor(unittest.TestCase):
         hs = HEPscore(test_config, "/tmp")
 
         self.assertEqual(hs.cec, "singularity")
-        self.assertEqual(hs.resultsdir, "/tmp")
+        self.assertEqual(hs.resultsdir, Path("/tmp"))
         self.assertEqual(hs.confobj, standard['hepscore_benchmark'])
 
     @patch.object(HEPscore, 'validate_conf')
@@ -53,7 +54,7 @@ class Test_Constructor(unittest.TestCase):
         hs = HEPscore(test_config, "/tmp1")
 
         self.assertEqual(hs.cec, "singularity")
-        self.assertEqual(hs.resultsdir, "/tmp1")
+        self.assertEqual(hs.resultsdir, Path("/tmp1"))
         self.assertEqual(hs.confobj, standard['hepscore_benchmark'])
 
 

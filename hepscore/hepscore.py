@@ -16,6 +16,7 @@ import math
 import multiprocessing
 import operator
 import os
+from pathlib import Path
 import re
 import shutil
 import stat
@@ -90,7 +91,7 @@ class HEPscore(object):
 
     def __init__(self, config, resultsdir):
         """Set & validate config, enable logging."""
-        self.resultsdir = resultsdir
+        self.resultsdir = Path(resultsdir).resolve()
         self.confobj = config['hepscore_benchmark']
         self.settings = self.confobj['settings']
 
@@ -108,7 +109,7 @@ class HEPscore(object):
         if 'clean' in self.confobj.get('options', {}):
             self.clean = self.confobj['options']['clean']
             if self.cec == 'singularity':
-                self.scache = resultsdir + '/scache'
+                self.scache = self.resultsdir.joinpath('scache')
         if 'clean_files' in self.confobj.get('options', {}):
             self.clean_files = self.confobj['options']['clean_files']
 
@@ -155,27 +156,25 @@ class HEPscore(object):
         benchmark_glob = benchmark.split('-')[:-1]
         benchmark_glob = '-'.join(benchmark_glob)
 
-        gpaths = sorted(glob.glob(self.resultsdir + "/" + benchmark_glob
-                                  + "/run*/" + benchmark_glob + "*/"
-                                  + benchmark_glob + "_summary.json"))
-        logger.debug("Looking for results in %s", gpaths)
+        summary_jsons = self.resultsdir.glob(benchmark_glob + '/**/*_summary.json')
+        logger.debug("Looking for results in %s", sorted(summary_jsons))
         i = -1
-        for gpath in gpaths:
+        for summary_json in summary_jsons:
             i += 1
-            logger.debug("Opening file %s", gpath)
+            logger.debug("Opening file %s", summary_json)
 
             try:
-                with open(gpath, mode='r') as jfile:
+                with open(summary_json, mode='r') as jfile:
                     lines = jfile.read()
             except Exception:
-                logger.error("Failure reading from %s", gpath)
+                logger.error("Failure reading from %s", summary_json)
                 continue
 
             try:
                 jscore = ""
                 jscore = json.loads(lines)
             except Exception:
-                logger.error("Malformed JSON in %s", gpath)
+                logger.error("Malformed JSON in %s", summary_json)
                 continue
 
             json_required_keys = ['app', 'run_info', 'report']
@@ -274,7 +273,8 @@ class HEPscore(object):
                 ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ret.wait()
             elif self.cec == 'singularity' and self.scache != "":
-                if os.path.abspath(self.scache) != '/' and self.scache.find(self.resultsdir) == 0:
+                # remove scache only if nested in rundir
+                if self.resultsdir in self.scache.parents:
                     logger.info("Removing temporary singularity cache %s", self.scache)
                     shutil.rmtree(self.scache)
                 else:
@@ -355,7 +355,7 @@ class HEPscore(object):
         gpu_flag = ""
 
         runs = int(self.confobj['settings']['repetitions'])
-        log = self.resultsdir + "/" + self.confobj['settings']['name'] + ".log"
+        logfile_path = self.resultsdir.joinpath(self.confobj['settings']['name'] + ".log")
 
         if 'retries' in self.confobj['settings']:
             retries = int(self.confobj['settings']['retries'])
@@ -408,9 +408,9 @@ class HEPscore(object):
                     options_string = options_string + ' ' + option_arg
 
         try:
-            lfile = open(log, mode='a')
+            lfile = open(logfile_path, mode='a')
         except Exception:
-            logger.error("failure to open %s", log)
+            logger.error("failure to open %s", logfile_path)
             return -1
 
         benchmark_name = bmark_registry + '/' + benchmark + ':' + bench_conf['version']
@@ -420,7 +420,7 @@ class HEPscore(object):
         if self.cec == 'singularity' and self.scache != "":
             logger.info("Creating singularity cache %s", self.scache)
             try:
-                os.makedirs(self.scache)
+                self.scache.mkdir()
                 os.environ['SINGULARITY_CACHEDIR'] = self.scache
             except Exception:
                 logger.error("Failed to create Singularity cache dir %s", self.scache)
@@ -429,18 +429,17 @@ class HEPscore(object):
             if successful_runs == runs:
                 break
 
-            runDir = self.resultsdir + "/" + benchmark[:-4] + "/run" + str(i)
-            logsFile = runDir + "/" + self.cec + "_logs"
+            runDir = self.resultsdir.joinpath(benchmark[:-4], "run" + str(i))
+            logsFile = runDir.joinpath(self.cec + "_logs")
 
             if self.confobj['settings']['replay'] is False:
-                os.makedirs(runDir)
+                runDir.mkdir()
                 if self.cec == 'docker':
-                    os.chmod(runDir, stat.S_ISVTX | stat.S_IRWXU |
-                             stat.S_IRWXG | stat.S_IRWXO)
+                    runDir.chmod(0o1777)
 
-            commands = {'docker': "docker run --rm --network=host -v " + runDir
+            commands = {'docker': "docker run --rm --network=host -v " + str(runDir)
                                   + ":/results " + gpu_flag,
-                        'singularity': "singularity run -C -B " + runDir + ":/results -B /tmp "
+                        'singularity': "singularity run -C -B " + str(runDir) + ":/results -B /tmp "
                                        + self._get_usernamespace_flag() + gpu_flag}
 
             command_string = commands[self.cec] + benchmark_complete
@@ -460,8 +459,7 @@ class HEPscore(object):
                                             stderr=subprocess.STDOUT)
                 except Exception:
                     if self.cec == 'docker':
-                        os.chmod(runDir, stat.S_IRWXU | stat.S_IRGRP |
-                                 stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                        runDir.chmod(0o1777)
 
                     logger.error("failure to execute: %s", command_string)
                     bench_conf['run' + str(i)]['end_at'] = bench_conf['run' + str(i)]['start_at']
@@ -564,10 +562,11 @@ class HEPscore(object):
     def write_output(self, outtype, outfile=None):
 
         if not outfile:
-            outfile = self.resultsdir + '/' + self.confobj['settings']['name'] + '.' + outtype
+            outfile = self.resultsdir.joinpath(self.confobj['settings']['name'] + '.' + outtype)
+        outfile = Path(outfile)
 
         # check outfile is same type as outtype
-        if outtype != outfile[-4:]:
+        if '.' + outtype != outfile.suffix:
             logging.error("%s output requested, but %s does not match!", outtype, outfile)
 
         outobj = {}
@@ -579,12 +578,11 @@ class HEPscore(object):
             raise ValueError("outtype must be 'json' or 'yaml'")
 
         try:
-            jfile = open(outfile, mode='w')
-            if outtype == 'yaml':
-                jfile.write(yaml.safe_dump(outobj, sort_keys=False))
-            else:
-                jfile.write(json.dumps(outobj))
-            jfile.close()
+            with open(outfile, mode='w') as output:
+                if outtype == 'yaml':
+                    output.write(yaml.safe_dump(outobj, sort_keys=False))
+                else:
+                    output.write(json.dumps(outobj))
         except Exception:
             logging.error("Failed to create summary output %s", outfile)
             sys.exit(2)
@@ -702,7 +700,7 @@ class HEPscore(object):
     def run(self, mock=False):
 
         # check rundir is empty
-        if os.listdir(self.resultsdir) and not mock:
+        if any(self.resultsdir.iterdir()) and not mock:
             logger.error("Results directory is not empty!")
             sys.exit(2)
 

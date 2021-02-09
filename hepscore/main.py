@@ -10,7 +10,7 @@
 
 import argparse
 import logging
-import os
+from pathlib import Path
 import sys
 import textwrap
 import time
@@ -45,8 +45,7 @@ def parse_args(args):
         ''')
     )
 
-    default_config = '/'.join(os.path.split(__file__)[:-1]) + \
-        "/etc/hepscore-default.yaml"
+    default_config = Path(__file__).parent.joinpath('etc', 'hepscore-default.yaml')
     # required argument
     parser.add_argument("OUTDIR", type=str, nargs='?', help="Base output directory.")
     # optionals
@@ -108,13 +107,12 @@ def main():
         print(e)
         logger.error("Cannot read/parse YAML configuration file %s", args['conffile'])
         sys.exit(1)
-
     if args['print']:
         print(yaml.safe_dump(active_config, sort_keys=False))
         sys.exit(0)
 
     # Don't let users pass their dirs in conf object
-    outdir = args.pop('OUTDIR', None)
+    resultsdir = Path(args.pop('OUTDIR', None))
 
     # separate conainment overide from options
     if args['container_exec']:
@@ -133,21 +131,16 @@ def main():
 
     # check replay outdir actually contains a run...
     if args['replay']:
-        if not os.path.isdir(outdir):
-            print("Replay did not find a valid directory at " + outdir)
+        if not resultsdir.is_dir():
+            logger.critical("Replay did not find a valid directory at %s", resultsdir)
             sys.exit(1)
-        else:
-            resultsdir = outdir
     else:
         try:
-            resultsdir = os.path.join(outdir, HEPscore.NAME + '_' + time.strftime("%d%b%Y_%H%M%S"))
-            os.makedirs(resultsdir)
-        except NotADirectoryError:
-            logger.error("%s not valid directory", resultsdir)
-            sys.exit(1)
-        except PermissionError:
-            logger.error("Failed creating output directory %s. Do you have write permission?",
-                         resultsdir)
+            resultsdir = Path(resultsdir, HEPscore.__name__ + '_' + time.strftime("%d%b%Y_%H%M%S"))
+            resultsdir.mkdir(parents=True)
+        except OSError:
+            logger.critical("Failed creating output directory %s. Do you have write permission?",
+                            resultsdir)
             sys.exit(1)
 
     hs = HEPscore(active_config, resultsdir)

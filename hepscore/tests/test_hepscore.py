@@ -7,6 +7,7 @@ the top-level directory of this distribution.
 from hepscore.hepscore import HEPscore
 import json
 import logging
+from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, patch, mock_open
 import yaml
@@ -55,33 +56,33 @@ class test_HEPscore(unittest.TestCase):
         assert mock_open
         fixture = MagicMock()
         fixture.confobj = {'settings': {'name': "test"}}
-        fixture.resultsdir = "/tmp"
+        fixture.resultsdir = Path("/tmp")
         fixture.results = [1,2]
-        assert fixture.resultsdir == "/tmp"
+        assert fixture.resultsdir == Path("/tmp")
         assert fixture.confobj == {'settings': {'name': "test"}}
 
         with self.assertRaises(ValueError):
             HEPscore.write_output(fixture, 'yml', 'garbage.yaml')
 
         HEPscore.write_output(fixture, 'yaml', 'out.yaml')
-        mock_open.assert_called_once_with('out.yaml', mode='w')
+        mock_open.assert_called_once_with(Path('out.yaml'), mode='w')
         handle = mock_open()
         handle.write.assert_called_once_with('hepscore_benchmark:\n  settings:\n    name: test\n')
         mock_open.reset_mock()
 
         HEPscore.write_output(fixture, 'yaml')
-        mock_open.assert_called_once_with('/tmp/test.yaml', mode='w')
+        mock_open.assert_called_once_with(Path('/tmp/test.yaml'), mode='w')
         handle = mock_open()
         handle.write.assert_called_once_with('hepscore_benchmark:\n  settings:\n    name: test\n')
         mock_open.reset_mock()
 
         HEPscore.write_output(fixture, 'json', 'out.json')
-        mock_open.assert_called_once_with('out.json', mode='w')
+        mock_open.assert_called_once_with(Path('out.json'), mode='w')
         handle.write.assert_called_once_with('{"settings": {"name": "test"}}')
         mock_open.reset_mock()
 
         HEPscore.write_output(fixture, 'json')
-        mock_open.assert_called_once_with('/tmp/test.json', mode='w')
+        mock_open.assert_called_once_with(Path('/tmp/test.json'), mode='w')
         handle.write.assert_called_once_with('{"settings": {"name": "test"}}')
 
         fixture.results = []
