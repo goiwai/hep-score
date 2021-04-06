@@ -360,8 +360,8 @@ class HEPscore():
         try:
             cmdf = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             for line in cmdf.stdout.readlines():
-                logger.info("DOCKER VER: %s", line)
-                logger.info("DOCKER VER DECODED: %s", re.sub(r'[^0-9\.]', '', line.decode('utf-8')))
+                logger.info("CE VER: %s", line)
+                logger.info("CE VER DECODED: %s", re.sub(r'[^0-9\.]', '', line.decode('utf-8')))
                 if re.sub(r'[^0-9\.]', '', line.decode('utf-8'))[0].isdigit():
                     return str(line.decode('utf-8').strip('\n'))
         except subprocess.SubprocessError:
