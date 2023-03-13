@@ -14,8 +14,6 @@ build_image_tox:
   image: # NB enable shared runners and do not specify a CI tag
     name: gitlab-registry.cern.ch/ci-tools/docker-image-builder # CERN version of the Kaniko image
     entrypoint: [""]
-  tags:
-    - hep-workload-docker-builder
   only:
     changes:
     - docker-images/tox/Dockerfile
@@ -33,8 +31,6 @@ pep8:
   stage: unit-test
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
   dependencies: []
-  tags:
-    - hep-workload-docker-builder
   except:
     - tags
   script:
@@ -58,8 +54,6 @@ pep8:
 python36:
   stage: unit-test
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
-  tags:
-    - hep-workload-docker-builder
   except:
     - tags
   script:
@@ -73,8 +67,6 @@ python36:
 security:
   stage: unit-test
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
-  tags:
-    - hep-workload-docker-builder
   except:
     - tags
   script:
@@ -172,9 +164,6 @@ kv_run_cc7:
 
 build_wheels:
   stage: deploy
-  image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
-  tags:
-    - hep-workload-docker-builder
   only:
     - tags
   script:
