@@ -944,7 +944,7 @@ class HEPscore():
                 os.rmdir(self.tmpdir)
             except OSError as err:
                 logger.warning("Could not remove temporary directory %s - %s", self.tmpdir, err)
-                if self.cec == "docker":
+                if self.cec == 'docker':
                     os.chmod(self.tmpdir, stat.S_IRWXU | stat.S_IRGRP |
                              stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
