@@ -172,6 +172,7 @@ class HEPscore():
         self.resultsdir = os.path.abspath(resultsdir)
         self.confobj = config['hepscore_benchmark']
         self.settings = self.confobj['settings']
+        self.tmpdir = self.resultsdir + '/tmp'
 
         if 'container_exec' in self.settings:
             if self.settings['container_exec'] in (
@@ -554,12 +555,14 @@ class HEPscore():
                 os.makedirs(run_dir)
                 if self.cec == 'docker':
                     os.chmod(run_dir, stat.S_ISVTX | stat.S_IRWXU |
-                             stat.S_IRWXG | stat.S_IRWXO)
+                        stat.S_IRWXG | stat.S_IRWXO)
 
             commands = {'docker': "docker run --rm --network=host -v " + run_dir
-                                  + ":/results " + gpu_flag,
+                                  + ":/results -v " + self.tmpdir + ":/tmp -v " + self.tmpdir
+                                  + ":/var/tmp " + gpu_flag,
                         'singularity': "singularity run -i -c -e -B " + run_dir
-                                       + ":/results -B /tmp "
+                                       + ":/results -B " + self.tmpdir + ":/tmp -B "
+                                       + self.tmpdir + ":/var/tmp "
                                        + self._get_unsquash_flag()
                                        + self._get_usernamespace_flag() + gpu_flag}
 
@@ -582,7 +585,7 @@ class HEPscore():
                 except (subprocess.SubprocessError, OSError):
                     if self.cec == 'docker':
                         os.chmod(run_dir, stat.S_IRWXU | stat.S_IRGRP |
-                                 stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                             stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
                     logger.error("failure to execute: %s", command_string)
                     bench_conf['run' + str(i)]['end_at'] = bench_conf['run' + str(i)]['start_at']
@@ -868,7 +871,8 @@ class HEPscore():
 
         sysinfo = os.uname()
         sysname = ' '.join(sysinfo)
-        curtime = time.asctime()
+        starttime = time.time()
+        curtime = time.asctime(time.localtime(starttime))
 
         impl,ver = self.get_version()
         exec_ver = impl + "_version"
@@ -889,18 +893,27 @@ class HEPscore():
         self.confobj['wl-scores'] = {}
         self.confobj['app_info']['hepscore_ver'] = __version__
 
-        if self.cec == 'singularity' and not mock:
-            try:
-                self.unpack = self.resultsdir + '/unpack'
-                logger.debug("Creating singularity unpack directory %s", self.unpack)
-                os.makedirs(self.unpack)
-                os.environ['SINGULARITY_TMPDIR'] = os.environ['APPTAINER_TMPDIR'] = self.unpack
-            except OSError:
-                logger.error("Failed to create Singularity unpack dir %s", self.unpack)
-                sys.exit(1)
-
         if mock is True:
             logging.info("NOTE: Replaying prior results")
+        else:
+            if self.cec == 'singularity':
+                try:
+                    self.unpack = self.resultsdir + '/unpack'
+                    logger.debug("Creating singularity unpack directory %s", self.unpack)
+                    os.makedirs(self.unpack)
+                    os.environ['SINGULARITY_TMPDIR'] = os.environ['APPTAINER_TMPDIR'] = self.unpack
+                except OSError:
+                    logger.error("Failed to create Singularity unpack dir %s", self.unpack)
+                    sys.exit(1)
+
+            try:
+                os.makedirs(self.tmpdir)
+                if self.cec == 'docker':
+                    os.chmod(self.tmpdir, stat.S_ISVTX | stat.S_IRWXU |
+                        stat.S_IRWXG | stat.S_IRWXO)
+            except:
+                logger.error("Failed to create tmpdir %s", self.tmpdir)
+                sys.exit(1)
 
         res = 0
         have_failure = False
@@ -922,14 +935,25 @@ class HEPscore():
                 self.weights.append(1.0)
                 bench_conf['weight'] = 1.0
 
-        self.confobj['environment']['end_at'] = time.asctime()
+        endtime= time.time()
+        self.confobj['environment']['end_at'] = time.asctime(time.localtime(endtime))
+        self.confobj['environment']['duration'] = math.floor(endtime) - math.floor(starttime)
 
-        if self.cec == 'singularity' and not mock:
-            logger.debug("Removing singularity unpack directory %s", self.unpack)
+        if not mock:
             try:
-                os.rmdir(self.unpack)
-            except OSError:
-                logger.error("Failed to remove Singularity unpack dir %s", self.unpack)
+                os.rmdir(self.tmpdir)
+            except OSError as err:
+                logger.warning("Could not remove temporary directory %s - %s", self.tmpdir, err)
+                if self.cec == "docker":
+                    os.chmod(self.tmpdir, stat.S_IRWXU | stat.S_IRGRP |
+                        stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+
+            if self.cec == 'singularity':
+                logger.debug("Removing singularity unpack directory %s", self.unpack)
+                try:
+                    os.rmdir(self.unpack)
+                except OSError as err:
+                    logger.warning("Could not remove Singularity unpack dir %s - %s", self.unpack, err)
 
         if have_failure:
             logger.error("BENCHMARK FAILURE")
