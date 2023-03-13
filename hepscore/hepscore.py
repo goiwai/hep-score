@@ -555,7 +555,7 @@ class HEPscore():
                 os.makedirs(run_dir)
                 if self.cec == 'docker':
                     os.chmod(run_dir, stat.S_ISVTX | stat.S_IRWXU |
-                        stat.S_IRWXG | stat.S_IRWXO)
+                             stat.S_IRWXG | stat.S_IRWXO)
 
             commands = {'docker': "docker run --rm --network=host -v " + run_dir
                                   + ":/results -v " + self.tmpdir + ":/tmp -v " + self.tmpdir
@@ -585,7 +585,7 @@ class HEPscore():
                 except (subprocess.SubprocessError, OSError):
                     if self.cec == 'docker':
                         os.chmod(run_dir, stat.S_IRWXU | stat.S_IRGRP |
-                             stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                                 stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
                     logger.error("failure to execute: %s", command_string)
                     bench_conf['run' + str(i)]['end_at'] = bench_conf['run' + str(i)]['start_at']
@@ -910,7 +910,7 @@ class HEPscore():
                 os.makedirs(self.tmpdir)
                 if self.cec == 'docker':
                     os.chmod(self.tmpdir, stat.S_ISVTX | stat.S_IRWXU |
-                        stat.S_IRWXG | stat.S_IRWXO)
+                             stat.S_IRWXG | stat.S_IRWXO)
             except:
                 logger.error("Failed to create tmpdir %s", self.tmpdir)
                 sys.exit(1)
@@ -946,7 +946,7 @@ class HEPscore():
                 logger.warning("Could not remove temporary directory %s - %s", self.tmpdir, err)
                 if self.cec == "docker":
                     os.chmod(self.tmpdir, stat.S_IRWXU | stat.S_IRGRP |
-                        stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                             stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
             if self.cec == 'singularity':
                 logger.debug("Removing singularity unpack directory %s", self.unpack)
