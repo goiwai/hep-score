@@ -90,7 +90,8 @@ test_python_support:
 hello-world-x86:
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
   tags:
-    - hep-workload-docker-builder
+    - hep-benchmarks
+    - x86_64
   stage: test
   variables: 
      HEPSCORECONF: $CI_PROJECT_DIR/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
@@ -119,14 +120,16 @@ hello-world-x86:
 
 hello-world-aarch64:
   tags:
-    - hepspec-docker-arm-runner
+    - hep-benchmarks
+    - aarch64
   extends: hello-world-x86
 
 
 kv_run_cc7:
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-benchmark-suite/hep-benchmark-suite-cc7:qa-v2.1
   tags:
-    - hep-workload-docker-builder
+    - hep-benchmarks
+    - x86_64
   stage: test
   script:
     - yum -y install bats
@@ -145,7 +148,9 @@ kv_run_cc7:
 .simpletrack_gpu:
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-benchmark-suite/hep-benchmark-suite-cc7:latest
   tags:
-    -  hep-workload-gpu-docker-builder
+    - hep-benchmarks
+    - x86_64
+    - gpu
   stage: test
   script:
     - yum -y install python3 python3-pip
