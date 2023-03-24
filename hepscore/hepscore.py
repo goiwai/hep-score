@@ -621,7 +621,7 @@ class HEPscore():
                 if cmdf.returncode > 0:
                     logger.error("%s output logs:", self.cec)
                     for line in list(reversed(output_logs))[-20:]:
-                        logger.error(line)
+                        logger.error(line.strip('\n'))
                 else:
                     successful_runs += 1
 
