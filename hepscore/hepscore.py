@@ -620,7 +620,7 @@ class HEPscore():
                 self._check_return_code(cmdf.returncode)
                 if cmdf.returncode > 0:
                     logger.error("%s output logs:", self.cec)
-                    for line in list(reversed(output_logs))[-20:]:
+                    for line in list(reversed(output_logs))[-100:]:
                         logger.error(line.strip('\n'))
                 else:
                     successful_runs += 1
