@@ -461,7 +461,7 @@ class HEPscore():
 
         bench_conf = self.confobj['benchmarks'][benchmark]
         options_string = " -W"
-        output_logs = ['']
+        output_logs = []
         bmark_keys = ''
         bmark_registry = self.registry
         bmark_reg_url = self.confobj['settings']['registry']
@@ -599,12 +599,13 @@ class HEPscore():
 
                 line = cmdf.stdout.readline()
                 while line:
-                    output_logs.insert(0, line)
                     try:
-                        lfile.write(line.decode('utf-8'))
+                        decoded_line = line.decode('utf-8')
                     except UnicodeEncodeError:
                         # Ignore decode errors, for example from special characters
                         pass
+                    output_logs.insert(0, decoded_line)
+                    lfile.write(decoded_line)
                     lfile.flush()
                     line = cmdf.stdout.readline()
                     if line[-25:] == "no space left on device.\n":
@@ -619,7 +620,7 @@ class HEPscore():
                 self._check_return_code(cmdf.returncode)
                 if cmdf.returncode > 0:
                     logger.error("%s output logs:", self.cec)
-                    for line in list(reversed(output_logs))[-10:]:
+                    for line in list(reversed(output_logs))[-20:]:
                         logger.error(line)
                 else:
                     successful_runs += 1
