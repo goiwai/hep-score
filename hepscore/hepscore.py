@@ -417,7 +417,7 @@ class HEPscore():
 
     def _get_unsquash_flag(self):
         """If we're running in apptainer that supports it, pass --unsquash"""
-        if self.check_userns() and self.check_unsquash():
+        if os.getuid()!=0 and self.check_userns() and self.check_unsquash():
             logger.debug("Enabling --unsquash flag in singularity call")
             return "--unsquash "
         else:
@@ -943,7 +943,7 @@ class HEPscore():
             try:
                 os.rmdir(self.tmpdir)
             except OSError as err:
-                logger.warning("Could not remove temporary directory %s - %s", self.tmpdir, err)
+                logger.debug("Could not remove temporary directory %s - %s", self.tmpdir, err)
                 if self.cec == 'docker':
                     os.chmod(self.tmpdir, stat.S_IRWXU | stat.S_IRGRP |
                              stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
@@ -953,7 +953,7 @@ class HEPscore():
                 try:
                     os.rmdir(self.unpack)
                 except OSError as err:
-                    logger.warning("Could not remove Singularity unpack dir %s - %s", self.unpack, err)
+                    logger.debug("Could not remove Singularity unpack dir %s - %s", self.unpack, err)
 
         if have_failure:
             logger.error("BENCHMARK FAILURE")
