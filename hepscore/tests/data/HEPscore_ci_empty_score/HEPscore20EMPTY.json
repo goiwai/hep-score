@@ -1,1 +1,26 @@
-{"benchmarks": {}, "settings": {"name": "HEPscore20EMPTY", "reference_machine": "CPU Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz", "registry": "docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads", "method": "geometric_mean", "repetitions": 3, "retries": 1, "scaling": 355, "container_exec": "singularity"}, "app_info": {"hepscore_ver": "1.0.0.0rc10.dev8", "config_hash": "812a51ce1d7e76f722ffb0a124a604b86eeaca380cda67d31cd22f09ffb6917a"}, "environment": {"date": "Wed Nov 18 18:04:29 2020", "singularity_version": "singularity version 3.6.3-1.el7", "system": "Linux"}, "wl-scores": {}, "score": 0.0, "status": "success"}
+{
+    "benchmarks": {},
+    "settings": {
+        "name": "HEPscore20EMPTY",
+        "reference_machine": "CPU Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz",
+        "registry": "docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads",
+        "method": "geometric_mean",
+        "repetitions": 3,
+        "retries": 1,
+        "scaling": 355,
+        "container_exec": "singularity",
+        "container_uri": "docker"
+    },
+    "app_info": {
+        "hepscore_ver": "1.0.0.0rc10.dev8",
+        "config_hash": "812a51ce1d7e76f722ffb0a124a604b86eeaca380cda67d31cd22f09ffb6917a"
+    },
+    "environment": {
+        "date": "Wed Nov 18 18:04:29 2020",
+        "singularity_version": "singularity version 3.6.3-1.el7",
+        "system": "Linux"
+    },
+    "wl-scores": {},
+    "score": 0.0,
+    "status": "success"
+}

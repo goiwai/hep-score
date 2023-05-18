@@ -61,6 +61,10 @@ def parse_args(args):
                         nargs='?', default=False,
                         help="specify container platform for benchmark execution "
                              "(singularity [default], or docker).")
+    parser.add_argument("-i", "--container_uri", choices=['docker', 'shub', 'dir', 'oras', 'https'],
+                        nargs='?', default=False,
+                        help="specify container image format"
+                             "(oras [default], docker, shub, dir, https).")
     parser.add_argument("-S", "--userns", action='store_true',
                         help="enable user namespace for Singularity, if supported.")
     parser.add_argument("-c", "--clean", action='store_true',
@@ -138,7 +142,7 @@ def main():
     # Don't let users pass their dirs in conf object
     outdir = args.pop('OUTDIR', None)
 
-    # separate conainment overide from options
+    # separate containment overide from options
     if args['container_exec']:
         active_config['hepscore_benchmark']['settings']['container_exec'] \
             = args.pop('container_exec')
