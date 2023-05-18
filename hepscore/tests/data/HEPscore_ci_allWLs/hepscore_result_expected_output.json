@@ -1,1 +1,721 @@
-{"benchmarks": {"atlas-gen-bmk": {"results_file": "atlas-gen_summary.json", "weight": 1.0, "version": "v2.1", "args": {"threads": 1, "events": 200}, "run0": {"start_at": "Tue Mar  2 15:53:19 2021", "end_at": "Tue Mar  2 16:18:11 2021", "duration": 1492, "report": {"wl-scores": {"gen": 1044.6459}, "wl-stats": {"avg": 16.3226, "median": 17.1381, "min": 11.655, "max": 19.1571, "count": 64}, "log": "ok"}}, "run1": {"start_at": "Tue Mar  2 16:18:11 2021", "end_at": "Tue Mar  2 16:43:09 2021", "duration": 1498, "report": {"wl-scores": {"gen": 1043.843}, "wl-stats": {"avg": 16.31, "median": 17.2861, "min": 11.1111, "max": 19.685, "count": 64}, "log": "ok"}}, "run2": {"start_at": "Tue Mar  2 16:43:09 2021", "end_at": "Tue Mar  2 17:08:06 2021", "duration": 1497, "report": {"wl-scores": {"gen": 1061.4133}, "wl-stats": {"avg": 16.5846, "median": 17.0504, "min": 11.4943, "max": 19.305, "count": 64}, "log": "ok"}}, "app": {"containment": "singularity", "bmk_checksum": "48598ad84ee79d858700ecc86b4e7c9a", "bmkdata_checksum": "809f5a89604aab45e53d3f1f69d6c6f9", "cvmfs_checksum": "1940e3491d437c6325aff2a2d5ab8fdd", "description": "ATLAS Event Generation based on athena version 19.2.5.5", "version": "v2.1"}, "run_info": {"copies": 64, "threads_per_copy": 1, "events_per_thread": 200}}, "belle2-gen-sim-reco-bmk": {"results_file": "belle2-gen-sim-reco_summary.json", "weight": 1.0, "version": "v2.1", "args": {"threads": 1, "events": 50}, "run0": {"start_at": "Tue Mar  2 17:08:06 2021", "end_at": "Tue Mar  2 17:14:41 2021", "duration": 395, "report": {"wl-scores": {"gen-sim-reco": 12.50925390735777, "gen": 631.1788315773449, "sim": 34.84932464962809, "reco": 20.508482356740014}, "wl-stats": {"gen-sim-reco": {"count": 64, "max": 0.20065010634455638, "avg": 0.19545709230246516, "median": 0.19692792560159456, "min": 0.18574241242245254}, "gen": {"count": 64, "max": 10.04016064257028, "avg": 9.862169243396014, "median": 9.881422924901187, "min": 9.505703422053232}, "sim": {"count": 64, "max": 0.5656108597285067, "avg": 0.5445206976504389, "median": 0.547585156231209, "min": 0.5110906674844117}, "reco": {"count": 64, "max": 0.32992411745298605, "avg": 0.3204450368240627, "median": 0.3223518806512894, "min": 0.3050082352223511}}, "log": "ok"}}, "run1": {"start_at": "Tue Mar  2 17:14:41 2021", "end_at": "Tue Mar  2 17:21:19 2021", "duration": 398, "report": {"wl-scores": {"gen-sim-reco": 12.418611881719642, "gen": 629.5893648625519, "sim": 34.58295340202166, "reco": 20.360203968983498}, "wl-stats": {"gen-sim-reco": {"count": 64, "max": 0.1992269992429374, "avg": 0.1940408106518694, "median": 0.19551489750201356, "min": 0.18452908178328906}, "gen": {"count": 64, "max": 10.04016064257028, "avg": 9.837333825977373, "median": 9.871677931878601, "min": 9.380863039399625}, "sim": {"count": 64, "max": 0.5577244841048523, "avg": 0.5403586469065884, "median": 0.5432420949915745, "min": 0.5058680696074465}, "reco": {"count": 64, "max": 0.32767547021429994, "avg": 0.31812818701536716, "median": 0.3203382775494656, "min": 0.3026268006294638}}, "log": "ok"}}, "run2": {"start_at": "Tue Mar  2 17:21:19 2021", "end_at": "Tue Mar  2 17:27:56 2021", "duration": 397, "report": {"wl-scores": {"gen-sim-reco": 12.414873893360234, "gen": 628.0247513644571, "sim": 34.57542539802271, "reco": 20.355392755022486}, "wl-stats": {"gen-sim-reco": {"count": 64, "max": 0.2000160012801024, "avg": 0.19398240458375365, "median": 0.1954575709413907, "min": 0.18498649598579303}, "gen": {"count": 64, "max": 10.02004008016032, "avg": 9.812886740069642, "median": 9.861932938856015, "min": 9.416195856873824}, "sim": {"count": 64, "max": 0.558971492453885, "avg": 0.5402410218441048, "median": 0.542799762809781, "min": 0.5086987486010784}, "reco": {"count": 64, "max": 0.329380764163373, "avg": 0.31805301179722634, "median": 0.32018443804639657, "min": 0.3031772980839195}}, "log": "ok"}}, "app": {"bmk_checksum": "c22b5186d0c62a1ea1b06e304f3865b2", "description": "belle2-gen-sim-reco-bmk", "cvmfs_checksum": "d365dbf4f4b60c6c8ea4eb53d49da4b1", "version": "v2.1", "containment": "docker", "bmkdata_checksum": "1d546a4c60149a9fd62ae71ebc40e3c2"}, "run_info": {"events_per_thread": 50, "copies": 64, "threads_per_copy": 1}}, "cms-gen-sim-bmk": {"results_file": "cms-gen-sim_summary.json", "weight": 1.0, "version": "v2.1", "args": {"threads": 4, "events": 20}, "run0": {"start_at": "Tue Mar  2 17:27:56 2021", "end_at": "Tue Mar  2 17:45:08 2021", "duration": 1032, "report": {"wl-scores": {"gen-sim": 1.7114}, "wl-stats": {"throughput_score": {"avg": 0.107, "median": 0.1072, "min": 0.1045, "max": 0.1088, "count": 16}, "CPU_score": {"avg": 0.0281, "median": 0.0281, "min": 0.0274, "max": 0.0286, "count": 16}}, "log": "ok"}}, "run1": {"start_at": "Tue Mar  2 17:45:08 2021", "end_at": "Tue Mar  2 17:57:43 2021", "duration": 755, "report": {"wl-scores": {"gen-sim": 1.7633}, "wl-stats": {"throughput_score": {"avg": 0.1102, "median": 0.1103, "min": 0.1083, "max": 0.1123, "count": 16}, "CPU_score": {"avg": 0.029, "median": 0.029, "min": 0.0286, "max": 0.0296, "count": 16}}, "log": "ok"}}, "run2": {"start_at": "Tue Mar  2 17:57:43 2021", "end_at": "Tue Mar  2 18:10:23 2021", "duration": 760, "report": {"wl-scores": {"gen-sim": 1.7556}, "wl-stats": {"throughput_score": {"avg": 0.1097, "median": 0.1096, "min": 0.1075, "max": 0.1126, "count": 16}, "CPU_score": {"avg": 0.0288, "median": 0.0288, "min": 0.0281, "max": 0.0296, "count": 16}}, "log": "ok"}}, "app": {"containment": "singularity", "bmk_checksum": "482d8efd1449002264bebd177cce44a0", "bmkdata_checksum": "09e9283642fecd717def8b483d30a27e", "cvmfs_checksum": "025f555ccd5ea8b1aef680434c8b8dea", "description": "CMS GEN-SIM of ttbar events, based on CMSSW_10_2_9", "version": "v2.1"}, "run_info": {"copies": 16, "threads_per_copy": 4, "events_per_thread": 20}}, "cms-digi-bmk": {"results_file": "cms-digi_summary.json", "weight": 1.0, "version": "v2.1", "args": {"threads": 4, "events": 50}, "run0": {"start_at": "Tue Mar  2 18:10:23 2021", "end_at": "Tue Mar  2 18:29:48 2021", "duration": 1165, "report": {"wl-scores": {"digi": 8.3437}, "wl-stats": {"throughput_score": {"avg": 0.5215, "median": 0.526, "min": 0.4958, "max": 0.5342, "count": 16}, "CPU_score": {"avg": 0.1403, "median": 0.1413, "min": 0.1319, "max": 0.1445, "count": 16}}, "log": "ok"}}, "run1": {"start_at": "Tue Mar  2 18:29:48 2021", "end_at": "Tue Mar  2 18:38:16 2021", "duration": 508, "report": {"wl-scores": {"digi": 8.282}, "wl-stats": {"throughput_score": {"avg": 0.5176, "median": 0.5219, "min": 0.4966, "max": 0.5271, "count": 16}, "CPU_score": {"avg": 0.1395, "median": 0.1409, "min": 0.1325, "max": 0.1429, "count": 16}}, "log": "ok"}}, "run2": {"start_at": "Tue Mar  2 18:38:16 2021", "end_at": "Tue Mar  2 18:46:42 2021", "duration": 506, "report": {"wl-scores": {"digi": 8.2686}, "wl-stats": {"throughput_score": {"avg": 0.5168, "median": 0.5223, "min": 0.4844, "max": 0.5324, "count": 16}, "CPU_score": {"avg": 0.1393, "median": 0.1411, "min": 0.1296, "max": 0.1437, "count": 16}}, "log": "ok"}}, "app": {"containment": "singularity", "bmk_checksum": "07b21173e4cd72d04b1b4b00da4e6061", "bmkdata_checksum": "b1aee3951cff029f030dd5233167a51c", "cvmfs_checksum": "77aad4087cafb0ace8260d1de257031e", "description": "CMS DIGI of ttbar events based on CMSSW_10_2_9", "version": "v2.1"}, "run_info": {"copies": 16, "threads_per_copy": 4, "events_per_thread": 50}}, "cms-reco-bmk": {"results_file": "cms-reco_summary.json", "weight": 1.0, "version": "v2.1", "args": {"threads": 4, "events": 50}, "run0": {"start_at": "Tue Mar  2 18:46:42 2021", "end_at": "Tue Mar  2 19:06:33 2021", "duration": 1191, "report": {"wl-scores": {"reco": 5.3813}, "wl-stats": {"throughput_score": {"avg": 0.3363, "median": 0.3373, "min": 0.3255, "max": 0.3424, "count": 16}, "CPU_score": {"avg": 0.0883, "median": 0.0886, "min": 0.0853, "max": 0.0897, "count": 16}}, "log": "ok"}}, "run1": {"start_at": "Tue Mar  2 19:06:33 2021", "end_at": "Tue Mar  2 19:18:51 2021", "duration": 738, "report": {"wl-scores": {"reco": 5.3622}, "wl-stats": {"throughput_score": {"avg": 0.3351, "median": 0.3372, "min": 0.3252, "max": 0.3393, "count": 16}, "CPU_score": {"avg": 0.088, "median": 0.0886, "min": 0.0854, "max": 0.0891, "count": 16}}, "log": "ok"}}, "run2": {"start_at": "Tue Mar  2 19:18:51 2021", "end_at": "Tue Mar  2 19:31:16 2021", "duration": 745, "report": {"wl-scores": {"reco": 5.3545}, "wl-stats": {"throughput_score": {"avg": 0.3347, "median": 0.3363, "min": 0.3221, "max": 0.3383, "count": 16}, "CPU_score": {"avg": 0.0879, "median": 0.0883, "min": 0.0843, "max": 0.0889, "count": 16}}, "log": "ok"}}, "app": {"containment": "singularity", "bmk_checksum": "0852715cbc1ddeea2e76301b69d1524e", "bmkdata_checksum": "cdf19b5f42900eb2cfea1dc1a10cae0c", "cvmfs_checksum": "3e51249ddbb4144b8a969a6977643995", "description": "CMS RECO of ttbar events, based on CMSSW_10_2_9", "version": "v2.1"}, "run_info": {"copies": 16, "threads_per_copy": 4, "events_per_thread": 50}}, "lhcb-gen-sim-bmk": {"results_file": "lhcb-gen-sim_summary.json", "weight": 1.0, "version": "v2.1", "args": {"threads": 1, "events": 5}, "run0": {"start_at": "Tue Mar  2 19:31:16 2021", "end_at": "Tue Mar  2 19:59:35 2021", "duration": 1699, "report": {"wl-scores": {"gen-sim": 234.2156, "sim": 302.1483, "gen": 1149.5421}, "wl-stats": {"gen-sim": {"max": 3.7612, "avg": 3.6596, "count": 64, "median": 3.6618, "min": 3.5837}, "sim": {"max": 4.9176, "avg": 4.7211, "count": 64, "median": 4.7185, "min": 4.6286}, "gen": {"max": 18.3465, "avg": 17.9616, "count": 64, "median": 18.0571, "min": 16.8361}}, "log": "ok"}}, "run1": {"start_at": "Tue Mar  2 19:59:35 2021", "end_at": "Tue Mar  2 20:26:08 2021", "duration": 1593, "report": {"wl-scores": {"sim": 306.2719, "gen-sim": 236.4258, "gen": 1164.9781}, "wl-stats": {"sim": {"min": 4.7054, "count": 64, "median": 4.7734, "avg": 4.7855, "max": 4.9158}, "gen-sim": {"min": 3.6061, "count": 64, "median": 3.693, "avg": 3.6942, "max": 3.7707}, "gen": {"min": 17.1869, "count": 64, "median": 18.2905, "avg": 18.2028, "max": 18.5673}}, "log": "ok"}}, "run2": {"start_at": "Tue Mar  2 20:26:08 2021", "end_at": "Tue Mar  2 20:52:56 2021", "duration": 1608, "report": {"wl-scores": {"gen": 1149.3576, "sim": 302.5653, "gen-sim": 233.886}, "wl-stats": {"gen": {"count": 64, "min": 16.9981, "max": 18.4047, "median": 18.0961, "avg": 17.9587}, "sim": {"count": 64, "min": 4.6347, "max": 4.8976, "median": 4.7266, "avg": 4.7276}, "gen-sim": {"count": 64, "min": 3.5621, "max": 3.7444, "median": 3.6553, "avg": 3.6545}}, "log": "ok"}}, "app": {"containment": "singularity", "bmk_checksum": "dc5ad0c309bcf5af0e38f600f1bdeee8", "bmkdata_checksum": "707baabbf015e2f5021a4cda34badc95", "cvmfs_checksum": "75684fff3da8b8c3a9bb91a2c4f0fda7", "description": "LHCb GEN-SIM benchmark", "version": "v2.1"}, "run_info": {"copies": 64, "threads_per_copy": 1, "events_per_thread": 5}}}, "settings": {"name": "HEPscore2X", "reference_machine": "CPU Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz", "registry": "docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads", "method": "geometric_mean", "repetitions": 3, "retries": 1, "scaling": 355, "container_exec": "singularity", "replay": false}, "app_info": {"config_hash": "0941b7238963f5f292338b04b8165dc432e20283cd817f6bd6f9c5dbfd14fb02", "hepscore_ver": "1.0.0.0rc12.dev18"}, "environment": {"system": "Linux", "date": "Tue Mar  2 15:53:19 2021", "singularity_version": "3.6.3-1.el7"}, "wl-scores": {"atlas-gen-bmk": {"gen": 1044.6459, "gen_ref": 384}, "belle2-gen-sim-reco-bmk": {"gen-sim-reco": 12.418611881719642, "gen-sim-reco_ref": 5.44}, "cms-gen-sim-bmk": {"gen-sim": 1.7556, "gen-sim_ref": 0.726}, "cms-digi-bmk": {"digi": 8.282, "digi_ref": 3.58}, "cms-reco-bmk": {"reco": 5.3622, "reco_ref": 2.196}, "lhcb-gen-sim-bmk": {"gen-sim": 234.2156, "gen-sim_ref": 90.29}}, "score": 872.266, "status": "success"}
+{
+    "benchmarks": {
+        "atlas-gen-bmk": {
+            "results_file": "atlas-gen_summary.json",
+            "weight": 1.0,
+            "version": "v2.1",
+            "args": {
+                "threads": 1,
+                "events": 200
+            },
+            "run0": {
+                "start_at": "Tue Mar  2 15:53:19 2021",
+                "end_at": "Tue Mar  2 16:18:11 2021",
+                "duration": 1492,
+                "report": {
+                    "wl-scores": {
+                        "gen": 1044.6459
+                    },
+                    "wl-stats": {
+                        "avg": 16.3226,
+                        "median": 17.1381,
+                        "min": 11.655,
+                        "max": 19.1571,
+                        "count": 64
+                    },
+                    "log": "ok"
+                }
+            },
+            "run1": {
+                "start_at": "Tue Mar  2 16:18:11 2021",
+                "end_at": "Tue Mar  2 16:43:09 2021",
+                "duration": 1498,
+                "report": {
+                    "wl-scores": {
+                        "gen": 1043.843
+                    },
+                    "wl-stats": {
+                        "avg": 16.31,
+                        "median": 17.2861,
+                        "min": 11.1111,
+                        "max": 19.685,
+                        "count": 64
+                    },
+                    "log": "ok"
+                }
+            },
+            "run2": {
+                "start_at": "Tue Mar  2 16:43:09 2021",
+                "end_at": "Tue Mar  2 17:08:06 2021",
+                "duration": 1497,
+                "report": {
+                    "wl-scores": {
+                        "gen": 1061.4133
+                    },
+                    "wl-stats": {
+                        "avg": 16.5846,
+                        "median": 17.0504,
+                        "min": 11.4943,
+                        "max": 19.305,
+                        "count": 64
+                    },
+                    "log": "ok"
+                }
+            },
+            "app": {
+                "containment": "singularity",
+                "bmk_checksum": "48598ad84ee79d858700ecc86b4e7c9a",
+                "bmkdata_checksum": "809f5a89604aab45e53d3f1f69d6c6f9",
+                "cvmfs_checksum": "1940e3491d437c6325aff2a2d5ab8fdd",
+                "description": "ATLAS Event Generation based on athena version 19.2.5.5",
+                "version": "v2.1"
+            },
+            "run_info": {
+                "copies": 64,
+                "threads_per_copy": 1,
+                "events_per_thread": 200
+            }
+        },
+        "belle2-gen-sim-reco-bmk": {
+            "results_file": "belle2-gen-sim-reco_summary.json",
+            "weight": 1.0,
+            "version": "v2.1",
+            "args": {
+                "threads": 1,
+                "events": 50
+            },
+            "run0": {
+                "start_at": "Tue Mar  2 17:08:06 2021",
+                "end_at": "Tue Mar  2 17:14:41 2021",
+                "duration": 395,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim-reco": 12.50925390735777,
+                        "gen": 631.1788315773449,
+                        "sim": 34.84932464962809,
+                        "reco": 20.508482356740014
+                    },
+                    "wl-stats": {
+                        "gen-sim-reco": {
+                            "count": 64,
+                            "max": 0.20065010634455638,
+                            "avg": 0.19545709230246516,
+                            "median": 0.19692792560159456,
+                            "min": 0.18574241242245254
+                        },
+                        "gen": {
+                            "count": 64,
+                            "max": 10.04016064257028,
+                            "avg": 9.862169243396014,
+                            "median": 9.881422924901187,
+                            "min": 9.505703422053232
+                        },
+                        "sim": {
+                            "count": 64,
+                            "max": 0.5656108597285067,
+                            "avg": 0.5445206976504389,
+                            "median": 0.547585156231209,
+                            "min": 0.5110906674844117
+                        },
+                        "reco": {
+                            "count": 64,
+                            "max": 0.32992411745298605,
+                            "avg": 0.3204450368240627,
+                            "median": 0.3223518806512894,
+                            "min": 0.3050082352223511
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run1": {
+                "start_at": "Tue Mar  2 17:14:41 2021",
+                "end_at": "Tue Mar  2 17:21:19 2021",
+                "duration": 398,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim-reco": 12.418611881719642,
+                        "gen": 629.5893648625519,
+                        "sim": 34.58295340202166,
+                        "reco": 20.360203968983498
+                    },
+                    "wl-stats": {
+                        "gen-sim-reco": {
+                            "count": 64,
+                            "max": 0.1992269992429374,
+                            "avg": 0.1940408106518694,
+                            "median": 0.19551489750201356,
+                            "min": 0.18452908178328906
+                        },
+                        "gen": {
+                            "count": 64,
+                            "max": 10.04016064257028,
+                            "avg": 9.837333825977373,
+                            "median": 9.871677931878601,
+                            "min": 9.380863039399625
+                        },
+                        "sim": {
+                            "count": 64,
+                            "max": 0.5577244841048523,
+                            "avg": 0.5403586469065884,
+                            "median": 0.5432420949915745,
+                            "min": 0.5058680696074465
+                        },
+                        "reco": {
+                            "count": 64,
+                            "max": 0.32767547021429994,
+                            "avg": 0.31812818701536716,
+                            "median": 0.3203382775494656,
+                            "min": 0.3026268006294638
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run2": {
+                "start_at": "Tue Mar  2 17:21:19 2021",
+                "end_at": "Tue Mar  2 17:27:56 2021",
+                "duration": 397,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim-reco": 12.414873893360234,
+                        "gen": 628.0247513644571,
+                        "sim": 34.57542539802271,
+                        "reco": 20.355392755022486
+                    },
+                    "wl-stats": {
+                        "gen-sim-reco": {
+                            "count": 64,
+                            "max": 0.2000160012801024,
+                            "avg": 0.19398240458375365,
+                            "median": 0.1954575709413907,
+                            "min": 0.18498649598579303
+                        },
+                        "gen": {
+                            "count": 64,
+                            "max": 10.02004008016032,
+                            "avg": 9.812886740069642,
+                            "median": 9.861932938856015,
+                            "min": 9.416195856873824
+                        },
+                        "sim": {
+                            "count": 64,
+                            "max": 0.558971492453885,
+                            "avg": 0.5402410218441048,
+                            "median": 0.542799762809781,
+                            "min": 0.5086987486010784
+                        },
+                        "reco": {
+                            "count": 64,
+                            "max": 0.329380764163373,
+                            "avg": 0.31805301179722634,
+                            "median": 0.32018443804639657,
+                            "min": 0.3031772980839195
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "app": {
+                "bmk_checksum": "c22b5186d0c62a1ea1b06e304f3865b2",
+                "description": "belle2-gen-sim-reco-bmk",
+                "cvmfs_checksum": "d365dbf4f4b60c6c8ea4eb53d49da4b1",
+                "version": "v2.1",
+                "containment": "docker",
+                "bmkdata_checksum": "1d546a4c60149a9fd62ae71ebc40e3c2"
+            },
+            "run_info": {
+                "events_per_thread": 50,
+                "copies": 64,
+                "threads_per_copy": 1
+            }
+        },
+        "cms-gen-sim-bmk": {
+            "results_file": "cms-gen-sim_summary.json",
+            "weight": 1.0,
+            "version": "v2.1",
+            "args": {
+                "threads": 4,
+                "events": 20
+            },
+            "run0": {
+                "start_at": "Tue Mar  2 17:27:56 2021",
+                "end_at": "Tue Mar  2 17:45:08 2021",
+                "duration": 1032,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim": 1.7114
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.107,
+                            "median": 0.1072,
+                            "min": 0.1045,
+                            "max": 0.1088,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.0281,
+                            "median": 0.0281,
+                            "min": 0.0274,
+                            "max": 0.0286,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run1": {
+                "start_at": "Tue Mar  2 17:45:08 2021",
+                "end_at": "Tue Mar  2 17:57:43 2021",
+                "duration": 755,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim": 1.7633
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.1102,
+                            "median": 0.1103,
+                            "min": 0.1083,
+                            "max": 0.1123,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.029,
+                            "median": 0.029,
+                            "min": 0.0286,
+                            "max": 0.0296,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run2": {
+                "start_at": "Tue Mar  2 17:57:43 2021",
+                "end_at": "Tue Mar  2 18:10:23 2021",
+                "duration": 760,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim": 1.7556
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.1097,
+                            "median": 0.1096,
+                            "min": 0.1075,
+                            "max": 0.1126,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.0288,
+                            "median": 0.0288,
+                            "min": 0.0281,
+                            "max": 0.0296,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "app": {
+                "containment": "singularity",
+                "bmk_checksum": "482d8efd1449002264bebd177cce44a0",
+                "bmkdata_checksum": "09e9283642fecd717def8b483d30a27e",
+                "cvmfs_checksum": "025f555ccd5ea8b1aef680434c8b8dea",
+                "description": "CMS GEN-SIM of ttbar events, based on CMSSW_10_2_9",
+                "version": "v2.1"
+            },
+            "run_info": {
+                "copies": 16,
+                "threads_per_copy": 4,
+                "events_per_thread": 20
+            }
+        },
+        "cms-digi-bmk": {
+            "results_file": "cms-digi_summary.json",
+            "weight": 1.0,
+            "version": "v2.1",
+            "args": {
+                "threads": 4,
+                "events": 50
+            },
+            "run0": {
+                "start_at": "Tue Mar  2 18:10:23 2021",
+                "end_at": "Tue Mar  2 18:29:48 2021",
+                "duration": 1165,
+                "report": {
+                    "wl-scores": {
+                        "digi": 8.3437
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.5215,
+                            "median": 0.526,
+                            "min": 0.4958,
+                            "max": 0.5342,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.1403,
+                            "median": 0.1413,
+                            "min": 0.1319,
+                            "max": 0.1445,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run1": {
+                "start_at": "Tue Mar  2 18:29:48 2021",
+                "end_at": "Tue Mar  2 18:38:16 2021",
+                "duration": 508,
+                "report": {
+                    "wl-scores": {
+                        "digi": 8.282
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.5176,
+                            "median": 0.5219,
+                            "min": 0.4966,
+                            "max": 0.5271,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.1395,
+                            "median": 0.1409,
+                            "min": 0.1325,
+                            "max": 0.1429,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run2": {
+                "start_at": "Tue Mar  2 18:38:16 2021",
+                "end_at": "Tue Mar  2 18:46:42 2021",
+                "duration": 506,
+                "report": {
+                    "wl-scores": {
+                        "digi": 8.2686
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.5168,
+                            "median": 0.5223,
+                            "min": 0.4844,
+                            "max": 0.5324,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.1393,
+                            "median": 0.1411,
+                            "min": 0.1296,
+                            "max": 0.1437,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "app": {
+                "containment": "singularity",
+                "bmk_checksum": "07b21173e4cd72d04b1b4b00da4e6061",
+                "bmkdata_checksum": "b1aee3951cff029f030dd5233167a51c",
+                "cvmfs_checksum": "77aad4087cafb0ace8260d1de257031e",
+                "description": "CMS DIGI of ttbar events based on CMSSW_10_2_9",
+                "version": "v2.1"
+            },
+            "run_info": {
+                "copies": 16,
+                "threads_per_copy": 4,
+                "events_per_thread": 50
+            }
+        },
+        "cms-reco-bmk": {
+            "results_file": "cms-reco_summary.json",
+            "weight": 1.0,
+            "version": "v2.1",
+            "args": {
+                "threads": 4,
+                "events": 50
+            },
+            "run0": {
+                "start_at": "Tue Mar  2 18:46:42 2021",
+                "end_at": "Tue Mar  2 19:06:33 2021",
+                "duration": 1191,
+                "report": {
+                    "wl-scores": {
+                        "reco": 5.3813
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.3363,
+                            "median": 0.3373,
+                            "min": 0.3255,
+                            "max": 0.3424,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.0883,
+                            "median": 0.0886,
+                            "min": 0.0853,
+                            "max": 0.0897,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run1": {
+                "start_at": "Tue Mar  2 19:06:33 2021",
+                "end_at": "Tue Mar  2 19:18:51 2021",
+                "duration": 738,
+                "report": {
+                    "wl-scores": {
+                        "reco": 5.3622
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.3351,
+                            "median": 0.3372,
+                            "min": 0.3252,
+                            "max": 0.3393,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.088,
+                            "median": 0.0886,
+                            "min": 0.0854,
+                            "max": 0.0891,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run2": {
+                "start_at": "Tue Mar  2 19:18:51 2021",
+                "end_at": "Tue Mar  2 19:31:16 2021",
+                "duration": 745,
+                "report": {
+                    "wl-scores": {
+                        "reco": 5.3545
+                    },
+                    "wl-stats": {
+                        "throughput_score": {
+                            "avg": 0.3347,
+                            "median": 0.3363,
+                            "min": 0.3221,
+                            "max": 0.3383,
+                            "count": 16
+                        },
+                        "CPU_score": {
+                            "avg": 0.0879,
+                            "median": 0.0883,
+                            "min": 0.0843,
+                            "max": 0.0889,
+                            "count": 16
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "app": {
+                "containment": "singularity",
+                "bmk_checksum": "0852715cbc1ddeea2e76301b69d1524e",
+                "bmkdata_checksum": "cdf19b5f42900eb2cfea1dc1a10cae0c",
+                "cvmfs_checksum": "3e51249ddbb4144b8a969a6977643995",
+                "description": "CMS RECO of ttbar events, based on CMSSW_10_2_9",
+                "version": "v2.1"
+            },
+            "run_info": {
+                "copies": 16,
+                "threads_per_copy": 4,
+                "events_per_thread": 50
+            }
+        },
+        "lhcb-gen-sim-bmk": {
+            "results_file": "lhcb-gen-sim_summary.json",
+            "weight": 1.0,
+            "version": "v2.1",
+            "args": {
+                "threads": 1,
+                "events": 5
+            },
+            "run0": {
+                "start_at": "Tue Mar  2 19:31:16 2021",
+                "end_at": "Tue Mar  2 19:59:35 2021",
+                "duration": 1699,
+                "report": {
+                    "wl-scores": {
+                        "gen-sim": 234.2156,
+                        "sim": 302.1483,
+                        "gen": 1149.5421
+                    },
+                    "wl-stats": {
+                        "gen-sim": {
+                            "max": 3.7612,
+                            "avg": 3.6596,
+                            "count": 64,
+                            "median": 3.6618,
+                            "min": 3.5837
+                        },
+                        "sim": {
+                            "max": 4.9176,
+                            "avg": 4.7211,
+                            "count": 64,
+                            "median": 4.7185,
+                            "min": 4.6286
+                        },
+                        "gen": {
+                            "max": 18.3465,
+                            "avg": 17.9616,
+                            "count": 64,
+                            "median": 18.0571,
+                            "min": 16.8361
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run1": {
+                "start_at": "Tue Mar  2 19:59:35 2021",
+                "end_at": "Tue Mar  2 20:26:08 2021",
+                "duration": 1593,
+                "report": {
+                    "wl-scores": {
+                        "sim": 306.2719,
+                        "gen-sim": 236.4258,
+                        "gen": 1164.9781
+                    },
+                    "wl-stats": {
+                        "sim": {
+                            "min": 4.7054,
+                            "count": 64,
+                            "median": 4.7734,
+                            "avg": 4.7855,
+                            "max": 4.9158
+                        },
+                        "gen-sim": {
+                            "min": 3.6061,
+                            "count": 64,
+                            "median": 3.693,
+                            "avg": 3.6942,
+                            "max": 3.7707
+                        },
+                        "gen": {
+                            "min": 17.1869,
+                            "count": 64,
+                            "median": 18.2905,
+                            "avg": 18.2028,
+                            "max": 18.5673
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "run2": {
+                "start_at": "Tue Mar  2 20:26:08 2021",
+                "end_at": "Tue Mar  2 20:52:56 2021",
+                "duration": 1608,
+                "report": {
+                    "wl-scores": {
+                        "gen": 1149.3576,
+                        "sim": 302.5653,
+                        "gen-sim": 233.886
+                    },
+                    "wl-stats": {
+                        "gen": {
+                            "count": 64,
+                            "min": 16.9981,
+                            "max": 18.4047,
+                            "median": 18.0961,
+                            "avg": 17.9587
+                        },
+                        "sim": {
+                            "count": 64,
+                            "min": 4.6347,
+                            "max": 4.8976,
+                            "median": 4.7266,
+                            "avg": 4.7276
+                        },
+                        "gen-sim": {
+                            "count": 64,
+                            "min": 3.5621,
+                            "max": 3.7444,
+                            "median": 3.6553,
+                            "avg": 3.6545
+                        }
+                    },
+                    "log": "ok"
+                }
+            },
+            "app": {
+                "containment": "singularity",
+                "bmk_checksum": "dc5ad0c309bcf5af0e38f600f1bdeee8",
+                "bmkdata_checksum": "707baabbf015e2f5021a4cda34badc95",
+                "cvmfs_checksum": "75684fff3da8b8c3a9bb91a2c4f0fda7",
+                "description": "LHCb GEN-SIM benchmark",
+                "version": "v2.1"
+            },
+            "run_info": {
+                "copies": 64,
+                "threads_per_copy": 1,
+                "events_per_thread": 5
+            }
+        }
+    },
+    "settings": {
+        "name": "HEPscore2X",
+        "reference_machine": "CPU Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz",
+        "registry": "docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads",
+        "method": "geometric_mean",
+        "repetitions": 3,
+        "retries": 1,
+        "scaling": 355,
+        "container_exec": "singularity",
+        "replay": false
+    },
+    "app_info": {
+        "config_hash": "0941b7238963f5f292338b04b8165dc432e20283cd817f6bd6f9c5dbfd14fb02",
+        "hepscore_ver": "1.0.0.0rc12.dev18"
+    },
+    "environment": {
+        "system": "Linux",
+        "date": "Tue Mar  2 15:53:19 2021",
+        "singularity_version": "3.6.3-1.el7"
+    },
+    "wl-scores": {
+        "atlas-gen-bmk": {
+            "gen": 1044.6459,
+            "gen_ref": 384
+        },
+        "belle2-gen-sim-reco-bmk": {
+            "gen-sim-reco": 12.418611881719642,
+            "gen-sim-reco_ref": 5.44
+        },
+        "cms-gen-sim-bmk": {
+            "gen-sim": 1.7556,
+            "gen-sim_ref": 0.726
+        },
+        "cms-digi-bmk": {
+            "digi": 8.282,
+            "digi_ref": 3.58
+        },
+        "cms-reco-bmk": {
+            "reco": 5.3622,
+            "reco_ref": 2.196
+        },
+        "lhcb-gen-sim-bmk": {
+            "gen-sim": 234.2156,
+            "gen-sim_ref": 90.29
+        }
+    },
+    "score": 872.266,
+    "status": "success"
+}

@@ -2,7 +2,10 @@ hepscore_benchmark:
   settings:
     name: HEPscoreCI
     reference_machine: 'Unknown'
-    registry: oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+    registry:
+      - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+      - docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+      - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
     addarch: true
     scaling: 10
     repetitions: 2  #number of repetitions of the same benchmark
@@ -16,4 +19,6 @@ hepscore_benchmark:
         gen: 1
       args:
         debug: true
+  options:
+    container_uri: oras
 
