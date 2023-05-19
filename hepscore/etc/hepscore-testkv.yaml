@@ -1,4 +1,4 @@
-hepscore_benchmark:
+hepscore:
   settings:
     name: HEPscoreTestKV
     reference_machine: 'Unknown'

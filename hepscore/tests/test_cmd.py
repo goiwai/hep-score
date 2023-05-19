@@ -26,7 +26,7 @@ class Test_Constructor(unittest.TestCase):
 
     @patch.object(HEPscore, 'validate_conf')
     def test_succeed_read_set_defaults(self, mock_validate):
-        standard = {'hepscore_benchmark':
+        standard = {'hepscore':
                     {'settings': {'name': 'test', 'registry': ['oras://abcd'],
                                   'reference_machine': 'unknown',
                                   'method': 'geometric_mean',
@@ -37,11 +37,11 @@ class Test_Constructor(unittest.TestCase):
 
         self.assertEqual(hs.cec, "singularity")
         self.assertEqual(hs.resultsdir, "/tmp")
-        self.assertEqual(hs.confobj, standard['hepscore_benchmark'])
+        self.assertEqual(hs.confobj, standard['hepscore'])
 
     @patch.object(HEPscore, 'validate_conf')
     def test_succeed_override_defaults(self, mock_validate):
-        standard = {'hepscore_benchmark':
+        standard = {'hepscore':
                     {'settings': {'name': 'test', 'registry': ['docker://abcd'],
                                   'reference_machine': 'unknown',
                                   'method': 'geometric_mean',
@@ -53,7 +53,7 @@ class Test_Constructor(unittest.TestCase):
 
         self.assertEqual(hs.cec, "docker")
         self.assertEqual(hs.resultsdir, "/tmp1")
-        self.assertEqual(hs.confobj, standard['hepscore_benchmark'])
+        self.assertEqual(hs.confobj, standard['hepscore'])
 
 class TestRun(unittest.TestCase):
 
@@ -95,9 +95,9 @@ class TestRun(unittest.TestCase):
         with open(self.path, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['options'] = {'container_uri': container_uri}
+        test_config['hepscore']['options'] = {'container_uri': container_uri}
 
-        test_config['hepscore_benchmark']['settings'].update(
+        test_config['hepscore']['settings'].update(
             {'container_exec': container_exec}
         )
 
@@ -122,9 +122,9 @@ class TestRun(unittest.TestCase):
         with open(self.path, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['options'] = {'container_uri': container_uri}
+        test_config['hepscore']['options'] = {'container_uri': container_uri}
 
-        test_config['hepscore_benchmark']['settings'].update(
+        test_config['hepscore']['settings'].update(
             {'registry' : registry ,
              'container_exec': container_exec}
         )
@@ -147,11 +147,11 @@ class TestRun(unittest.TestCase):
         with open(self.path, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['settings'].update(
+        test_config['hepscore']['settings'].update(
             {'registry' : registry ,
             'container_exec': container_exec}
         )
-        del test_config['hepscore_benchmark']['options']['container_uri']
+        del test_config['hepscore']['options']['container_uri']
 
         if testidx == 0:
             self.assertIsInstance(HEPscore(test_config, "/tmp1"), HEPscore)
@@ -175,10 +175,10 @@ class testOutput(unittest.TestCase):
         with open(conf, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['options'] = {}
-        test_config['hepscore_benchmark']['options']['level'] = 'DEBUG'
-        test_config['hepscore_benchmark']['options']['clean'] = True
-        test_config['hepscore_benchmark']['options']['clean_files'] = False
+        test_config['hepscore']['options'] = {}
+        test_config['hepscore']['options']['level'] = 'DEBUG'
+        test_config['hepscore']['options']['clean'] = True
+        test_config['hepscore']['options']['clean_files'] = False
 
         outtype = "json"
         outfile = ""
@@ -226,9 +226,9 @@ class testOutput(unittest.TestCase):
         with open(conf, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['options'] = {}
-        test_config['hepscore_benchmark']['options']['level'] = 'DEBUG'
-        test_config['hepscore_benchmark']['options']['clean'] = True
+        test_config['hepscore']['options'] = {}
+        test_config['hepscore']['options']['level'] = 'DEBUG'
+        test_config['hepscore']['options']['clean'] = True
 
         outtype = "json"
         outfile = ""

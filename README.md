@@ -56,25 +56,23 @@ reference server.  The scaling value for HEPscore23 is defined as the HS06
 ## HEPscore23 Benchmark
 
 HEPscore23 is a benchmark based on containerized HEP workloads that
-the HEPiX Benchmarking Working Group is targeting to eventually replace
-HEPSPEC06 as the standard HEPiX/WLCG benchmark.  It is currently in a
-proof of concept development state, and consists of the following workloads 
-from the
+is replacing HEPSPEC06 as the standard HEPiX/WLCG benchmark.  It is consists 
+of the following workloads:
 [HEP Workloads project](
 https://gitlab.cern.ch/hep-benchmarks/hep-workloads):  
 atlas-gen_sherpa-ma-bmk  
 atlas-reco_mt-ma-bmk  
 cms-gen-sim-run3-ma-bmk  
 cms-reco-run3-ma-bmk  
-lhcb-gen-sim-2021-bmk  
-belle2-gen-sim-reco-2021-bmk  
-alice-digi-reco-core-run3-bmk
+lhcb-sim-run3-ma-bmk 
+belle2-gen-sim-reco-ma-bmk 
+alice-digi-reco-core-run3-ma-bmk 
 You can view the YAML HEPscore configuration for HEPscore23 by
 executing ```hep-score -p```.
 
 The benchmark will take 5+ hours to execute on modern hardware.
 
-**NOTE**: ~20 GB of free disk space in your Singularity or Docker
+**NOTE**: ~35 GB of free disk space in your Singularity or Docker
 cache area, and 320 MB/core of free space (e.g. 20 GB on 64 core host)
 in the specified OUTDIR output directory is necessary to run the
 HEPscore23 benchmark.  If passed the ```-c``` (clean images) and
@@ -128,9 +126,9 @@ release tarfile, execute ```pip install --user hepscore_wheels/*.whl```.
 ## Dependencies
 
 HEPscore requires a **Python 3.6+** installation.  The pip installation will pull
-in all python module dependencies.  HEPscore should be used with **Singularity
-3.5.3 and newer**, or **Docker 1.13 and newer**.  There are some known issues
-when using HEPscore with earlier Singularity and Docker releases.
+in all python module dependencies.  HEPscore should be used with **Apptainer 1.1.3
+and newer**, **Singularity 3.5.3 and newer**, or **Docker 1.13 and newer**.  There are 
+some known issues when using HEPscore with earlier Singularity and Docker releases.
 
 **NOTE**: if you are running hep-score on a host with over 100 cores, it may be
 necessary to increase your max user processes ulimit before execution.
@@ -138,7 +136,8 @@ necessary to increase your max user processes ulimit before execution.
 ## Running HEPscore
 
 ```sh
-usage: hep-score [-h] [-m [{singularity,docker}]] [-S] [-c] [-C]
+usage: hep-score [-h] [-m [{singularity,docker}]]
+                 [-i [{docker,shub,dir,oras,https}]] [-S] [-c] [-C]
                  [-f [CONFFILE]] [-l] [-n [NAMEDCONF]] [-r] [-o [OUTFILE]]
                  [-y] [-p] [-V] [-v]
                  [OUTDIR]
@@ -151,6 +150,9 @@ optional arguments:
   -m [{singularity,docker}], --container_exec [{singularity,docker}]
                         specify container platform for benchmark execution
                         (singularity [default], or docker).
+  -i [{docker,shub,dir,oras,https}], --container_uri [{docker,shub,dir,oras,https}]
+                        specify container registry type (oras , docker,
+                        shub, dir, https).
   -S, --userns          enable user namespace for Singularity, if supported.
   -c, --clean           clean residual container images from system after run.
   -C, --clean_files     clean residual files & directories after execution.
@@ -168,8 +170,9 @@ optional arguments:
   -V, --version         show program's version number and exit
   -v, --verbose         enables verbose mode. Display debug messages.
 
-
+-----------------------------------------------
 Examples:
+
 Run benchmarks via Docker, and display verbose information:
 $ hep-score -v -m docker ./testdir
 
@@ -180,7 +183,8 @@ List built-in benchmark configurations:
 $ hep-score -l
 
 Run with a specified built-in benchmark configuration:
-$ hep-score -n hepscore_testkv /tmp
+$ hep-score -n hepscore-testkv /tmp
+
 ```
 
 Singularity will be used as the container engine for the run, unless Docker
@@ -203,7 +207,7 @@ file also contains all of the summary JSON output data from each sub-benchmark.
 An example hepscore YAML configuration is below:
 
 ```yaml
-hepscore_benchmark:
+hepscore:
   benchmarks:
     cms-reco-bmk:
       results_file: cms-reco_summary.json
@@ -233,7 +237,7 @@ hepscore_benchmark:
     container_exec: singularity
 ```
 
-All configuration parameters must be under the "hepscore_benchmark" key.
+All configuration parameters must be under the "hepscore" key.
 
 ### Parameters
 
@@ -289,7 +293,7 @@ score
 
 ###### registry
 
-STRING; defaults to the primary registry specified in "settings"  
+STRING or LIST of STRINGs; defaults to the primary registry specified in "settings"  
 Allows for overriding the registry to use for this container.  See
 "registry", under "settings" below, for more information
 
@@ -312,14 +316,17 @@ performance of this host
 
 ##### registry (required)
 
-STRING  
+STRING or LIST of STRINGs 
 The registry to run containers from.  Multiple URIs are permitted:
 ```docker://``` to specify a Docker registry, ```dir://``` (Singularity
 only) to specify a local directory containing unpacked images or image
 files, ```shub://``` (Singularity only) to specify a Singularity
 registry, ```oras://``` (Singularity only) to specify an OCI registry,
 or ```https://``` (Singularity only) to specify an HTTPS image 
-repository.
+repository.  If a list of registries is given, users can request
+the particular registry type to use with the `-i` command line argument 
+to hepscore:  otherwise, a registry compatible with the container engine
+being used will be chosen automatically.
 
 ##### method (required)
 
@@ -379,5 +386,5 @@ You can also submit issues via
 
 |     |     |     |
 | --- | --- | --- |
-| **qa-v1.0**     |  [![pipeline status](https://gitlab.cern.ch/hep-benchmarks/hep-score/badges/qa-v1.0/pipeline.svg)](https://gitlab.cern.ch/hep-benchmarks/hep-score/commits/qa-v1.0)     | ![code quality](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/jobs/artifacts/qa-v1.0/raw/public/badges/pep8.svg?job=pep8) |
+| **qa**     |  [![pipeline status](https://gitlab.cern.ch/hep-benchmarks/hep-score/badges/qa/pipeline.svg)](https://gitlab.cern.ch/hep-benchmarks/hep-score/commits/qa)     | ![code quality](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/jobs/artifacts/qa/raw/public/badges/pep8.svg?job=pep8) |
 | **master**      |  [![pipeline status](https://gitlab.cern.ch/hep-benchmarks/hep-score/badges/master/pipeline.svg)](https://gitlab.cern.ch/hep-benchmarks/hep-score/commits/master)       | ![code quality](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/jobs/artifacts/master/raw/public/badges/pep8.svg?job=pep8) |

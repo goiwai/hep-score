@@ -1,4 +1,4 @@
-hepscore_benchmark:
+hepscore:
   benchmarks:
     atlas-gen_sherpa-ma-bmk:
       results_file: atlas-gen_sherpa-ma_summary.json

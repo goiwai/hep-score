@@ -1,4 +1,4 @@
-hepscore_benchmark:
+hepscore:
   settings:
     name: HEPscoreCI
     reference_machine: 'Unknown'

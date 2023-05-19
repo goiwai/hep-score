@@ -175,7 +175,7 @@ class HEPscore():
             resultsdir (str): Path to output results
         """
         self.resultsdir = os.path.abspath(resultsdir)
-        self.confobj = config['hepscore_benchmark']
+        self.confobj = config['hepscore']
         self.settings = self.confobj['settings']
         self.tmpdir = self.resultsdir + '/tmp'
 
@@ -192,7 +192,7 @@ class HEPscore():
                 logger.error("%s not understood. Stopping", self.settings['container_exec'])
                 sys.exit(1)
         else:
-            logger.warning("Container not specified on commandline or in config - assuming %s",
+            logger.debug("Container engine not specified on commandline or in config - assuming %s",
                            self.cec)
 
         if 'container_uri' in self.options:
@@ -786,7 +786,7 @@ class HEPscore():
 
         outobj = {}
         if outtype == 'yaml':
-            outobj['hepscore_benchmark'] = self.confobj
+            outobj['hepscore'] = self.confobj
         elif outtype == 'json':
             outobj = self.confobj
         else:
@@ -1026,7 +1026,6 @@ class HEPscore():
             try:
                 os.rmdir(self.tmpdir)
             except OSError as err:
-                logger.debug("Could not remove temporary directory %s - %s", self.tmpdir, err)
                 if self.cec == 'docker':
                     os.chmod(self.tmpdir, stat.S_IRWXU | stat.S_IRGRP |
                              stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)

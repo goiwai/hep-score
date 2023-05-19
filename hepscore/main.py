@@ -48,7 +48,7 @@ def parse_args(args):
         $ hep-score -l
 
         Run with a specified built-in benchmark configuration:
-        $ hep-score -n hepscore_testkv /tmp
+        $ hep-score -n hepscore-testkv /tmp
 
         Included benchmark configuraton files available in:
         ''' + hepscore.config_path)
@@ -63,8 +63,8 @@ def parse_args(args):
                              "(singularity [default], or docker).")
     parser.add_argument("-i", "--container_uri", choices=['docker', 'shub', 'dir', 'oras', 'https'],
                         nargs='?', default=False,
-                        help="specify container image format"
-                             "(oras [default], docker, shub, dir, https).")
+                        help="specify container registry type "
+                             "(oras, docker, shub, dir, https).")
     parser.add_argument("-S", "--userns", action='store_true',
                         help="enable user namespace for Singularity, if supported.")
     parser.add_argument("-c", "--clean", action='store_true',
@@ -144,17 +144,17 @@ def main():
 
     # separate containment overide from options
     if args['container_exec']:
-        active_config['hepscore_benchmark']['settings']['container_exec'] \
+        active_config['hepscore']['settings']['container_exec'] \
             = args.pop('container_exec')
 
     outtype = 'yaml' if 'yaml' in user_args else 'json'
     user_args.pop('yaml', None)
 
     # Populate active config with cli override
-    if 'options' not in active_config['hepscore_benchmark']:
-        active_config['hepscore_benchmark']['options'] = {}
+    if 'options' not in active_config['hepscore']:
+        active_config['hepscore']['options'] = {}
     for arg in user_args:
-        active_config['hepscore_benchmark']['options'][arg] = user_args[arg]
+        active_config['hepscore']['options'][arg] = user_args[arg]
 
 
     # check replay outdir actually contains a run...

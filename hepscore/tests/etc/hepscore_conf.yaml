@@ -1,4 +1,4 @@
-hepscore_benchmark:
+hepscore:
   benchmarks:
     atlas-gen-bmk:
       results_file: atlas-gen_summary.json

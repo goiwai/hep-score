@@ -66,13 +66,13 @@ class test_HEPscore(unittest.TestCase):
         HEPscore.write_output(fixture, 'yaml', 'out.yaml')
         mock_open.assert_called_once_with('out.yaml', mode='w')
         handle = mock_open()
-        handle.write.assert_called_once_with('hepscore_benchmark:\n  settings:\n    name: test\n')
+        handle.write.assert_called_once_with('hepscore:\n  settings:\n    name: test\n')
         mock_open.reset_mock()
 
         HEPscore.write_output(fixture, 'yaml')
         mock_open.assert_called_once_with('/tmp/test.yaml', mode='w')
         handle = mock_open()
-        handle.write.assert_called_once_with('hepscore_benchmark:\n  settings:\n    name: test\n')
+        handle.write.assert_called_once_with('hepscore:\n  settings:\n    name: test\n')
         mock_open.reset_mock()
 
         HEPscore.write_output(fixture, 'json', 'out.json')
