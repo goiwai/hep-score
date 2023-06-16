@@ -142,9 +142,18 @@ def main():
     # Don't let users pass their dirs in conf object
     outdir = args.pop('OUTDIR', None)
 
+    usekey = None
+    for bmkey in ['hepscore', 'hepscore_benchmark']:
+        if bmkey in active_config:
+            usekey = bmkey
+            break
+    if usekey is None:
+        print("Required 'hepscore' key not in configuration!")
+        sys.exit(1)
+
     # separate containment overide from options
     if args['container_exec']:
-        active_config['hepscore']['settings']['container_exec'] \
+        active_config[usekey]['settings']['container_exec'] \
             = args.pop('container_exec')
 
     outtype = 'yaml' if 'yaml' in user_args else 'json'
@@ -152,9 +161,9 @@ def main():
 
     # Populate active config with cli override
     if 'options' not in active_config['hepscore']:
-        active_config['hepscore']['options'] = {}
+        active_config[usekey]['options'] = {}
     for arg in user_args:
-        active_config['hepscore']['options'][arg] = user_args[arg]
+        active_config[usekey]['options'][arg] = user_args[arg]
 
 
     # check replay outdir actually contains a run...
