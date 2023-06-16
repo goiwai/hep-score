@@ -175,6 +175,16 @@ class HEPscore():
             resultsdir (str): Path to output results
         """
         self.resultsdir = os.path.abspath(resultsdir)
+
+        if 'hepscore_benchmark' in config:
+            logger.warning("Deprecated 'hepscore_benchmark' key found in configuration."
+                           "  Please update to 'hepscore'.");
+            config['hepscore'] = config['hepscore_benchmark']
+            del config['hepscore_benchmark']
+        if 'hepscore' not in config:
+            logger.error("Required 'hepscore' key not in configuration!")
+            sys.exit(1)
+
         self.confobj = config['hepscore']
         self.settings = self.confobj['settings']
         self.tmpdir = self.resultsdir + '/tmp'
