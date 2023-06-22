@@ -145,6 +145,7 @@ class HEPscore():
     clean = False
     clean_files = False
     userns = False
+    Ncores = None
     addarch = False
     valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
     valid_curis = {
@@ -215,6 +216,9 @@ class HEPscore():
 
         if 'userns' in self.options:
             self.userns = self.confobj['options']['userns']
+
+        if 'Ncores' in self.options:
+            self.Ncores = self.confobj['options']['Ncores']
 
         self.confobj.pop('options', None)
         self.validate_conf()
@@ -544,6 +548,8 @@ class HEPscore():
     def _run_benchmark(self, benchmark, mock):
         """Run a benchark from the configuration"""
         bench_conf = self.confobj['benchmarks'][benchmark]
+        # Arguments of each workload that are ignored
+        bad_args = [ "resultsdir",  "--resultsdir", "-m", "-w", "-W"]
         options_string = " -W"
         output_logs = []
         bmark_keys = ''
@@ -582,6 +588,8 @@ class HEPscore():
 
         if self.clean_files is True:
             options_string += " --mop all"
+            bad_args.extend(["mop", "--mop", "-m"])
+            logger.info("Option clean_all selected. Ignoring the corresponding mop parameter of the workloads")
 
         if 'gpu' in bench_conf and bench_conf['gpu'] is True:
             if self.cec == 'singularity':
@@ -589,8 +597,12 @@ class HEPscore():
             else:
                 gpu_flag = "--gpus all "
 
+        if self.Ncores:
+            logger.info("Enforcing run of each workload on only %s cores", self.Ncores)
+            options_string += " --ncores %s " % self.Ncores
+            bad_args.extend(["ncores", "--ncores", "-n"])
+
         for option in bmark_keys:
-            bad_args = ["mop", "resultsdir", "--mop", "--resultsdir", "-m", "-w", "-W"]
             option_arg = str(bench_conf['args'][option])
 
             if self.check_chars(option) is None or \

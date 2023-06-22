@@ -77,6 +77,8 @@ def parse_args(args):
                         help="list built-in benchmark configurations and exit.")
     parser.add_argument("-n", "--namedconf", nargs='?', default='',
                         help="use specified named built-in benchmark configuration.")
+    parser.add_argument("-N", "--Ncores", nargs='?', default=None,
+                        help="custom number of cores to be loaded.")
     parser.add_argument("-r", "--replay", action='store_true',
                         help="replay output using existing results directory OUTDIR.")
     parser.add_argument("-o", "--outfile", nargs='?', default=False,
