@@ -136,7 +136,6 @@ def main():
         conffile = default_config
 
     active_config = hepscore.read_yaml(conffile)
-    logging.info("active config %s",active_config)
     if args['print']:
         print(yaml.safe_dump(active_config, sort_keys=False))
         sys.exit(0)
@@ -157,10 +156,10 @@ def main():
         active_config['hepscore']['options'] = {}
     for arg in user_args:
         if arg == 'ncores':
-            active_config['hepscore']['settings'][arg] = user_args[arg]
+            if user_args[arg] != None:
+                active_config['hepscore']['settings'][arg] = int(user_args[arg])
         else:
             active_config['hepscore']['options'][arg] = user_args[arg]
-        logger.info("looping on %s %s" % (arg, user_args[arg]))
         
 
     # check replay outdir actually contains a run...
@@ -183,7 +182,6 @@ def main():
                          resultsdir)
             sys.exit(1)
 
-    logger.info("adesso %s", active_config)
     hep_score = hepscore.HEPscore(active_config, resultsdir)
 
     if hep_score.run(args['replay']) >= 0:
