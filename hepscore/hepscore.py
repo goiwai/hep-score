@@ -182,8 +182,6 @@ class HEPscore():
 
         if 'options' in self.confobj:
             self.options = self.confobj['options']
-            logger.debug("this is %s", self.options )
-            logger.debug("this is %s", self.confobj )
         else:
             self.options = {}
 
@@ -208,6 +206,9 @@ class HEPscore():
         if 'addarch' in self.settings:
             self.addarch = self.settings['addarch']
 
+        if 'ncores' in self.settings:
+            self.ncores = int(self.confobj['settings']['ncores'])
+
         if 'clean' in self.options:
             self.clean = self.confobj['options']['clean']
             if self.clean and self.cec == 'singularity':
@@ -218,10 +219,6 @@ class HEPscore():
 
         if 'userns' in self.options:
             self.userns = self.confobj['options']['userns']
-
-        if 'ncores' in self.options:
-            self.ncores = self.confobj['options']['ncores']
-            logger.info(self.ncores)
 
         self.confobj.pop('options', None)
         self.validate_conf()
@@ -814,6 +811,7 @@ class HEPscore():
             else:
                 jfile.write(json.dumps(outobj))
             jfile.close()
+            logger.info("Written output file with results at %s",outfile)
         except OSError:
             logging.error("Failed to create summary output %s", outfile)
             sys.exit(2)
