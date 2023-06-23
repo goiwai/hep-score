@@ -11,6 +11,7 @@ hepscore:
     repetitions: 2  #number of repetitions of the same benchmark
     method: geometric_mean #or any other algorithm
     container_exec: singularity
+    ncores: 6
   benchmarks:
     hello-world-c7-ma-bmk:
       results_file: hello-world-c7-ma_summary.json
@@ -19,8 +20,8 @@ hepscore:
         gen: 1
       args:
         debug: true
-        ncores: 2
         mop: none
   options:
     container_uri: oras
+    
 
