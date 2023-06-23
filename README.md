@@ -138,7 +138,7 @@ necessary to increase your max user processes ulimit before execution.
 ```sh
 usage: hep-score [-h] [-m [{singularity,docker}]]
                  [-i [{docker,shub,dir,oras,https}]] [-S] [-c] [-C]
-                 [-f [CONFFILE]] [-l] [-n [NAMEDCONF]] [-r] [-o [OUTFILE]]
+                 [-f [CONFFILE]] [-l] [-b [BUILTINCONF]] [-r] [-o [OUTFILE]]
                  [-y] [-p] [-V] [-v]
                  [OUTDIR]
 
@@ -160,7 +160,7 @@ optional arguments:
   -f [CONFFILE], --conffile [CONFFILE]
                         custom config yaml to use instead of default.
   -l, --list            list built-in benchmark configurations and exit.
-  -n [NAMEDCONF], --namedconf [NAMEDCONF]
+  -n [BUILTINCONF], --BUILTINCONF [BUILTINCONF]
                         use specified named built-in benchmark configuration.
   -r, --replay          replay output using existing results directory OUTDIR.
   -o [OUTFILE], --outfile [OUTFILE]

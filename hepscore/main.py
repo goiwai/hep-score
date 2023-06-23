@@ -75,10 +75,10 @@ def parse_args(args):
                         help="custom config yaml to use instead of default.")
     parser.add_argument("-l", "--list", action='store_true',
                         help="list built-in benchmark configurations and exit.")
-    parser.add_argument("-n", "--namedconf", nargs='?', default='',
+    parser.add_argument("-b", "--builtinconf", nargs='?', default='',
                         help="use specified named built-in benchmark configuration.")
-    parser.add_argument("-N", "--Ncores", nargs='?', default=None,
-                        help="custom number of cores to be loaded.")
+    parser.add_argument("-n", "--ncores", nargs='?', default=None,
+                        help="custom number of cores to be loaded. This parameter will change the hash function")
     parser.add_argument("-r", "--replay", action='store_true',
                         help="replay output using existing results directory OUTDIR.")
     parser.add_argument("-o", "--outfile", nargs='?', default=False,
@@ -122,21 +122,21 @@ def main():
             print(f)
         sys.exit(0)
 
-    if args['conffile']!='' and args['namedconf']!='':
+    if args['conffile']!='' and args['builtinconf']!='':
         logger.error('Cannot specify both a configuration file and a built-in configuration')
         sys.exit(1)
 
     if args['conffile']!='':
         conffile = args.pop('conffile')
-    elif args['namedconf']!='':
-        if args['namedconf'] not in hepscore.list_named_confs():
-            logging.error("%s not an available built-in configuration", args['namedconf'])
-        conffile = hepscore.named_conf(args.pop('namedconf'))
+    elif args['builtinconf']!='':
+        if args['builtinconf'] not in hepscore.list_named_confs():
+            logging.error("%s not an available built-in configuration", args['builtinconf'])
+        conffile = hepscore.named_conf(args.pop('builtinconf'))
     else:
         conffile = default_config
 
     active_config = hepscore.read_yaml(conffile)
-
+    logging.info("active config %s",active_config)
     if args['print']:
         print(yaml.safe_dump(active_config, sort_keys=False))
         sys.exit(0)
@@ -156,8 +156,12 @@ def main():
     if 'options' not in active_config['hepscore']:
         active_config['hepscore']['options'] = {}
     for arg in user_args:
-        active_config['hepscore']['options'][arg] = user_args[arg]
-
+        if arg == 'ncores':
+            active_config['hepscore']['settings'][arg] = user_args[arg]
+        else:
+            active_config['hepscore']['options'][arg] = user_args[arg]
+        logger.info("looping on %s %s" % (arg, user_args[arg]))
+        
 
     # check replay outdir actually contains a run...
     if args['replay']:
@@ -179,6 +183,7 @@ def main():
                          resultsdir)
             sys.exit(1)
 
+    logger.info("adesso %s", active_config)
     hep_score = hepscore.HEPscore(active_config, resultsdir)
 
     if hep_score.run(args['replay']) >= 0:

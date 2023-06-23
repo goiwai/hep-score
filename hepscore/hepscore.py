@@ -145,7 +145,7 @@ class HEPscore():
     clean = False
     clean_files = False
     userns = False
-    Ncores = None
+    ncores = 3
     addarch = False
     valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
     valid_curis = {
@@ -182,6 +182,8 @@ class HEPscore():
 
         if 'options' in self.confobj:
             self.options = self.confobj['options']
+            logger.debug("this is %s", self.options )
+            logger.debug("this is %s", self.confobj )
         else:
             self.options = {}
 
@@ -217,8 +219,9 @@ class HEPscore():
         if 'userns' in self.options:
             self.userns = self.confobj['options']['userns']
 
-        if 'Ncores' in self.options:
-            self.Ncores = self.confobj['options']['Ncores']
+        if 'ncores' in self.options:
+            self.ncores = self.confobj['options']['ncores']
+            logger.info(self.ncores)
 
         self.confobj.pop('options', None)
         self.validate_conf()
@@ -597,9 +600,9 @@ class HEPscore():
             else:
                 gpu_flag = "--gpus all "
 
-        if self.Ncores:
-            logger.info("Enforcing run of each workload on only %s cores", self.Ncores)
-            options_string += " --ncores %s " % self.Ncores
+        if self.ncores:
+            logger.info("Enforcing run of each workload on only %s cores", self.ncores)
+            options_string += " --ncores %s " % self.ncores
             bad_args.extend(["ncores", "--ncores", "-n"])
 
         for option in bmark_keys:
