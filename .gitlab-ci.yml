@@ -96,28 +96,10 @@ hello-world-x86:
   variables: 
      HEPSCORECONF: $CI_PROJECT_DIR/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
      HEPSCORECONF_DOCKER: hepscoreconf_docker.yaml
+     HEPSCOREWD: $CI_PROJECT_DIR/hepscore/tests/data/HEPscore_ci/
   script:
     - pip3 install .
-    - echo ${HEPSCORECONF}
-    - echo ${HEPSCORECONF_DOCKER}
-    - cat ${HEPSCORECONF} 
-    - |
-      cat ${HEPSCORECONF} | sed -e "s@addarch: true@addarch: false@" -e "s@container_uri: oras@container_uri: docker@" > ${HEPSCORECONF_DOCKER}
-    - echo "Run with Apptainer on sif images"
-    - hep-score -v -f ${HEPSCORECONF} $CI_PROJECT_DIR/hepscore/tests/data/HEPscore_ci/
-    - cat ${HEPSCORECONF_DOCKER}
-    - echo "Run with Apptainer on docker images"
-    - hep-score -v -f ${HEPSCORECONF_DOCKER} $CI_PROJECT_DIR/hepscore/tests/data/HEPscore_ci/
-    - echo "Run with Docker on docker images"
-    - | 
-      sed -i ${HEPSCORECONF_DOCKER} -e "s@container_exec: singularity@container_exec: docker@"
-    - cat ${HEPSCORECONF_DOCKER}
-    - hep-score -v -f ${HEPSCORECONF_DOCKER} $CI_PROJECT_DIR/hepscore/tests/data/HEPscore_ci/
-    # - echo "Run with singularity on cvmfs images"
-    # - | 
-    #   sed -i ${HEPSCORECONF} -e "s@container_uri: oras@container_uri: dir@"
-    # - cat ${HEPSCORECONF}
-    # - hep-score -v -f ${HEPSCORECONF} $CI_PROJECT_DIR/hepscore/tests/data/HEPscore_ci/
+    - $CI_PROJECT_DIR/hepscore/tests/ci_hello_world.sh
 
   after_script:
     - tar -czf hep-score-test.tgz /tmp/HEPSCORE/$CI_JOB_ID
