@@ -138,7 +138,7 @@ necessary to increase your max user processes ulimit before execution.
 ```sh
 usage: hep-score [-h] [-m [{singularity,docker}]]
                  [-i [{docker,shub,dir,oras,https}]] [-S] [-c] [-C]
-                 [-f [CONFFILE]] [-l] [-b [BUILTINCONF]] [-r] [-o [OUTFILE]]
+                 [-f [CONFFILE]] [-l] [-b [BUILTINCONF]] [n [NCORES]] [-r] [-o [OUTFILE]]
                  [-y] [-p] [-V] [-v]
                  [OUTDIR]
 
@@ -160,8 +160,11 @@ optional arguments:
   -f [CONFFILE], --conffile [CONFFILE]
                         custom config yaml to use instead of default.
   -l, --list            list built-in benchmark configurations and exit.
-  -n [BUILTINCONF], --BUILTINCONF [BUILTINCONF]
+  -b [BUILTINCONF], --BUILTINCONF [BUILTINCONF]
                         use specified named built-in benchmark configuration.
+  -n [NCORES], --ncores [NCORES]
+                        custom number of cores to be loaded. This parameter
+                        will change the hash function
   -r, --replay          replay output using existing results directory OUTDIR.
   -o [OUTFILE], --outfile [OUTFILE]
                         specify summary output file path/name.
