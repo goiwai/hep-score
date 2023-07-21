@@ -145,7 +145,7 @@ class HEPscore():
     clean = False
     clean_files = False
     userns = False
-    ncores = 3
+    ncores = 0
     addarch = False
     valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
     valid_curis = {
@@ -597,7 +597,7 @@ class HEPscore():
             else:
                 gpu_flag = "--gpus all "
 
-        if self.ncores:
+        if self.ncores != 0:
             logger.info("Enforcing run of each workload on only %s cores", self.ncores)
             options_string += " --ncores %s " % self.ncores
             bad_args.extend(["ncores", "--ncores", "-n"])
