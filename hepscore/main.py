@@ -160,7 +160,7 @@ def main():
     user_args.pop('yaml', None)
 
     # Populate active config with cli override
-    if 'options' not in active_config['hepscore']:
+    if 'options' not in active_config[usekey]:
         active_config[usekey]['options'] = {}
     for arg in user_args:
         active_config[usekey]['options'][arg] = user_args[arg]
