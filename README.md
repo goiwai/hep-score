@@ -138,7 +138,7 @@ necessary to increase your max user processes ulimit before execution.
 ```sh
 usage: hep-score [-h] [-m [{singularity,docker}]]
                  [-i [{docker,shub,dir,oras,https}]] [-S] [-c] [-C]
-                 [-f [CONFFILE]] [-l] [-b [BUILTINCONF]] [n [NCORES]] [-r] [-o [OUTFILE]]
+                 [-f [CONFFILE]] [-l] [-b [BUILTINCONF]] [-n [NCORES]] [-r] [-o [OUTFILE]]
                  [-y] [-p] [-V] [-v]
                  [OUTDIR]
 
@@ -170,7 +170,7 @@ optional arguments:
                         specify summary output file path/name.
   -y, --yaml            create YAML summary output instead of JSON.
   -p, --print           print configuration and exit.
-  -V, --version         show program's version number and exit
+  -V, --version         show version number and exit
   -v, --verbose         enables verbose mode. Display debug messages.
 
 -----------------------------------------------
