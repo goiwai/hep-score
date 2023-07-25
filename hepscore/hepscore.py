@@ -609,7 +609,7 @@ class HEPscore():
 
         if self.ncores != 0:
             logger.info("Enforcing run of each workload on only %s cores", self.ncores)
-            options_string += " --ncores %s " % self.ncores
+            options_string += " --ncores %s" % self.ncores
             bad_args.extend(["ncores", "--ncores", "-n"])
 
         for option in bmark_keys:
@@ -821,7 +821,7 @@ class HEPscore():
             else:
                 jfile.write(json.dumps(outobj))
             jfile.close()
-            logger.info("Written output file with results at %s",outfile)
+            logger.debug("Output file with detailed results: %s",outfile)
         except OSError:
             logging.error("Failed to create summary output %s", outfile)
             sys.exit(2)
