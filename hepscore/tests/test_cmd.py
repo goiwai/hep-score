@@ -21,7 +21,7 @@ class Test_Constructor(unittest.TestCase):
             HEPscore(resultsdir="/tmp")
 
     def test_fail_read_conf(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(SystemExit):
             HEPscore(dict(), "/tmp")
 
     @patch.object(HEPscore, 'validate_conf')
