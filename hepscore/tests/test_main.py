@@ -55,7 +55,7 @@ class Test_main(unittest.TestCase):
                          'clean': False,
                          'cleanall': False,
                          'conffile': self.mock_bad_path,
-                         'namedconf': '',
+                         'builtinconf': '',
                          'replay': False,
                          'resultsdir': False,
                          'outfile': False,

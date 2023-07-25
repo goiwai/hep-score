@@ -10,6 +10,8 @@ the '-i' option (BMK-1188)
 -Change configuration key from 'hepscore_benchmark' to 'hepscore' (BMK-1175)
 -Don't set OUTDIR scache directory as singularity cache when clean option is 
 false (BMK-1198) 
+- Configurable number of cores to be loaded (ncores) to be passed to the workloads, 
+if the workloads implement this feature
 
 v1.5
 ----
