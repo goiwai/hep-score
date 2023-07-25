@@ -549,7 +549,7 @@ class HEPscore():
         """Run a benchark from the configuration"""
         bench_conf = self.confobj['benchmarks'][benchmark]
         # Arguments of each workload that are ignored
-        bad_args = [ "resultsdir",  "--resultsdir", "-m", "-w", "-W"]
+        bad_args = [ "resultsdir",  "--resultsdir", "-w", "-W"]
         options_string = " -W"
         output_logs = []
         bmark_keys = ''
