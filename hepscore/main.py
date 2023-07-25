@@ -48,7 +48,7 @@ def parse_args(args):
         $ hep-score -l
 
         Run with a specified built-in benchmark configuration:
-        $ hep-score -n hepscore-testkv /tmp
+        $ hep-score -b hepscore-testkv /tmp
 
         Included benchmark configuraton files available in:
         ''' + hepscore.config_path)

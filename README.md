@@ -160,7 +160,7 @@ optional arguments:
   -f [CONFFILE], --conffile [CONFFILE]
                         custom config yaml to use instead of default.
   -l, --list            list built-in benchmark configurations and exit.
-  -b [BUILTINCONF], --BUILTINCONF [BUILTINCONF]
+  -b [BUILTINCONF], --builtinconf [BUILTINCONF]
                         use specified named built-in benchmark configuration.
   -n [NCORES], --ncores [NCORES]
                         custom number of cores to be loaded. This parameter
@@ -186,7 +186,7 @@ List built-in benchmark configurations:
 $ hep-score -l
 
 Run with a specified built-in benchmark configuration:
-$ hep-score -n hepscore-testkv /tmp
+$ hep-score -b hepscore-testkv /tmp
 
 ```
 
