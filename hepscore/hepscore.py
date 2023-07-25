@@ -145,6 +145,7 @@ class HEPscore():
     clean = False
     clean_files = False
     userns = False
+    ncores = 0
     addarch = False
     valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
     valid_curis = {
@@ -204,6 +205,9 @@ class HEPscore():
 
         if 'addarch' in self.settings:
             self.addarch = self.settings['addarch']
+
+        if 'ncores' in self.settings:
+            self.ncores = int(self.confobj['settings']['ncores'])
 
         if 'clean' in self.options:
             self.clean = self.confobj['options']['clean']
@@ -544,6 +548,8 @@ class HEPscore():
     def _run_benchmark(self, benchmark, mock):
         """Run a benchark from the configuration"""
         bench_conf = self.confobj['benchmarks'][benchmark]
+        # Arguments of each workload that are ignored
+        bad_args = [ "resultsdir",  "--resultsdir", "-w", "-W"]
         options_string = " -W"
         output_logs = []
         bmark_keys = ''
@@ -582,6 +588,8 @@ class HEPscore():
 
         if self.clean_files is True:
             options_string += " --mop all"
+            bad_args.extend(["mop", "--mop", "-m"])
+            logger.info("Option clean_all selected. Ignoring the corresponding mop parameter of the workloads")
 
         if 'gpu' in bench_conf and bench_conf['gpu'] is True:
             if self.cec == 'singularity':
@@ -589,8 +597,12 @@ class HEPscore():
             else:
                 gpu_flag = "--gpus all "
 
+        if self.ncores != 0:
+            logger.info("Enforcing run of each workload on only %s cores", self.ncores)
+            options_string += " --ncores %s " % self.ncores
+            bad_args.extend(["ncores", "--ncores", "-n"])
+
         for option in bmark_keys:
-            bad_args = ["mop", "resultsdir", "--mop", "--resultsdir", "-m", "-w", "-W"]
             option_arg = str(bench_conf['args'][option])
 
             if self.check_chars(option) is None or \
@@ -799,6 +811,7 @@ class HEPscore():
             else:
                 jfile.write(json.dumps(outobj))
             jfile.close()
+            logger.info("Written output file with results at %s",outfile)
         except OSError:
             logging.error("Failed to create summary output %s", outfile)
             sys.exit(2)
