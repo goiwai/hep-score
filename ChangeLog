@@ -7,7 +7,8 @@ v1.6
 -Only log failure to remove unpack directory when debugging is enabled
 -Add support for lists of registry types, with one to utilize selectable via 
 the '-i' option (BMK-1188)
--Change configuration key from 'hepscore_benchmark' to 'hepscore' (BMK-1175)
+-Change configuration key from 'hepscore_benchmark' to 'hepscore' (BMK-1175),
+but allow the 'hepscore_benchmark' key for compatibility (BMK-1219)
 -Don't set OUTDIR scache directory as singularity cache when clean option is 
 false (BMK-1198) 
 - Configurable number of cores to be loaded (ncores) to be passed to the workloads, 
