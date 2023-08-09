@@ -77,6 +77,8 @@ def parse_args(args):
                         help="list built-in benchmark configurations and exit.")
     parser.add_argument("-b", "--builtinconf", nargs='?', default='',
                         help="use specified named built-in benchmark configuration.")
+    parser.add_argument("-R", "--registry", nargs='?', default=None,
+                        help="override registry in configuration")
     parser.add_argument("-n", "--ncores", nargs='?', default=None,
                         help="custom number of cores to be loaded. This parameter will change the hash function")
     parser.add_argument("-r", "--replay", action='store_true',
@@ -164,9 +166,14 @@ def main():
     if 'options' not in active_config[usekey]:
         active_config[usekey]['options'] = {}
     for arg in user_args:
-        if arg == 'ncores':
+        if arg in ('ncores', 'registry'):
             if user_args[arg] != None:
-                active_config[usekey]['settings'][arg] = int(user_args[arg])
+                if arg == 'ncores':
+                    sval = int(user_args[arg])
+                else:
+                    sval = user_args[arg]
+                    print("NOTICE - overriding config registry with " + sval)
+                active_config[usekey]['settings'][arg] = sval
         else:
             active_config[usekey]['options'][arg] = user_args[arg]
 
