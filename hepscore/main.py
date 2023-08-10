@@ -50,6 +50,9 @@ def parse_args(args):
         Run with a specified built-in benchmark configuration:
         $ hep-score -b hepscore-testkv /tmp
 
+        Run using the workload containers in a local directory:
+        $ hep-score --registry dir:///home/bmk/hs23-workloads /tmp
+
         Included benchmark configuraton files available in:
         ''' + hepscore.config_path)
     )
@@ -78,7 +81,7 @@ def parse_args(args):
     parser.add_argument("-b", "--builtinconf", nargs='?', default='',
                         help="use specified named built-in benchmark configuration.")
     parser.add_argument("-R", "--registry", nargs='?', default=None,
-                        help="override registry in configuration")
+                        help="override the configured registry.")
     parser.add_argument("-n", "--ncores", nargs='?', default=None,
                         help="custom number of cores to be loaded. This parameter will change the hash function")
     parser.add_argument("-r", "--replay", action='store_true',

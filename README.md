@@ -5,10 +5,12 @@
 1. [About](#about)  
 2. [HEPscore23 Benchmark](#hepscore23-benchmark)
 3. [Downloading and Installing HEPscore](#downloading-and-installing-hepscore)  
+    1.  [Installing on Systems Without External Network Connectivity](#installing-on-systems-without-external-network-connectivity)  
 4. [Dependencies](#dependencies)  
-5. [Configuring HEPscore](#configuring-hepscore)  
+5. [Running HEPscore](#running-hepscore)  
+6. [Configuring HEPscore](#configuring-hepscore)  
     1. [Parameters](#parameters)  
-6. [Feedback and Support](#feedback-and-support)
+7. [Feedback and Support](#feedback-and-support)
 
 ## About
 
@@ -113,6 +115,7 @@ $ pip install --user .
 the default python installation, it may be necessary to use ```pip3``` to
 install instead of ```pip```.
 
+### Installing on Systems Without External Network Connectivity
 Release tarfiles containing the Python wheel for the hepscore package, as
 well as all dependency wheels, are available/published in the
 [HEPscore release documentation](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/releases).
@@ -122,6 +125,11 @@ These wheels can be used to install HEPscore via pip on hosts without
 network connectivity.  To install, after downloading and untarring a
 release tarfile, execute ```pip install --user hepscore_wheels/*.whl```.
 
+x86_64 and aarch64 tarfiles containing all of the workloads used in HEPscore23
+are available here: <https://hep-benchmarks.web.cern.ch/hep-score/workloads>.
+After untaring, the local workloads can be used with hep-score by passing the
+directory to the ```-R``` or ```--registry``` options, i.e.:
+```hep-score --registry dir:///PATH/TO/UNTARRED/WORKLOADS/hs23-workloads /tmp```
 
 ## Dependencies
 
@@ -162,6 +170,8 @@ optional arguments:
   -l, --list            list built-in benchmark configurations and exit.
   -b [BUILTINCONF], --builtinconf [BUILTINCONF]
                         use specified named built-in benchmark configuration.
+  -R [REGISTRY], --registry [REGISTRY]
+                        override the configured registry.
   -n [NCORES], --ncores [NCORES]
                         custom number of cores to be loaded. This parameter
                         will change the hash function
@@ -187,6 +197,9 @@ $ hep-score -l
 
 Run with a specified built-in benchmark configuration:
 $ hep-score -b hepscore-testkv /tmp
+
+Run using the workload containers in a local directory:
+$ hep-score --registry dir:///home/bmk/hs23-workloads /tmp
 
 ```
 
