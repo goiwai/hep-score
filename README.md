@@ -85,9 +85,7 @@ greatly reduce the amount of space needed to run.
 
 It is also possible to run the benchmark containers out of the
 "unpacked.cern.ch" CVMFS repo instead of the CERN gitlab Docker registry,
-by passing ```hep-score``` the
-[hepscore-cvmfs.yaml](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/raw/qa/hepscore/etc/hepscore23-cvmfs.yaml)
-file shipped in the application's etc/ directory.  When running the
+by passing ```hep-score``` the ```-i dir``` parameter.  When running the
 benchmark using the unpacked images in CVMFS, the Singularity cache area
 is not utilized.
 
