@@ -66,9 +66,10 @@ atlas-gen_sherpa-ma-bmk
 atlas-reco_mt-ma-bmk  
 cms-gen-sim-run3-ma-bmk  
 cms-reco-run3-ma-bmk  
-lhcb-sim-run3-ma-bmk 
-belle2-gen-sim-reco-ma-bmk 
-alice-digi-reco-core-run3-ma-bmk 
+lhcb-sim-run3-ma-bmk  
+belle2-gen-sim-reco-ma-bmk  
+alice-digi-reco-core-run3-ma-bmk  
+
 You can view the YAML HEPscore configuration for HEPscore23 by
 executing ```hep-score -p```.
 
@@ -128,7 +129,7 @@ release tarfile, execute ```pip install --user hepscore_wheels/*.whl```.
 x86_64 and aarch64 tarfiles containing all of the workloads used in HEPscore23
 are available here: <https://hep-benchmarks.web.cern.ch/hep-score/workloads>.
 After untaring, the local workloads can be used with hep-score by passing the
-directory to the ```-R``` or ```--registry``` options, i.e.:
+directory with the ```-R``` or ```--registry``` options, i.e.:
 ```hep-score --registry dir:///PATH/TO/UNTARRED/WORKLOADS/hs23-workloads /tmp```
 
 ## Dependencies
