@@ -1003,6 +1003,13 @@ class HEPscore():
             logging.info("NOTE: Replaying prior results")
         else:
             if self.cec == 'singularity':
+                bad_envs = ['SINGULARITY_BIND', 'SINGULARITY_BINDPATH', 'APPTAINER_BIND', 'APPTAINER_BINDPATH']
+
+                for be in bad_envs:
+                    if be in os.environ:
+                        logger.warning("Unsetting " + be + " environment variable")
+                        os.environ.pop(be)
+
                 try:
                     self.unpack = self.resultsdir + '/unpack'
                     logger.debug("Creating singularity unpack directory %s", self.unpack)
