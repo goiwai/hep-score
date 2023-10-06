@@ -76,5 +76,4 @@ hepscore:
     retries: 1
     scaling: 1018
     container_exec: singularity
-    container_uri: oras
 

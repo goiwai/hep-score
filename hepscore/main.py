@@ -169,16 +169,16 @@ def main():
     if 'options' not in active_config[usekey]:
         active_config[usekey]['options'] = {}
     for arg in user_args:
-        if arg in ('ncores', 'registry'):
-            if user_args[arg] != None:
-                if arg == 'ncores':
-                    sval = int(user_args[arg])
-                else:
-                    sval = user_args[arg]
-                    print("NOTICE - overriding config registry with " + sval)
-                active_config[usekey]['settings'][arg] = sval
-        else:
-            active_config[usekey]['options'][arg] = user_args[arg]
+        if user_args[arg] != None:
+            if arg == 'ncores':
+                sval = int(user_args[arg])
+            else:
+                sval = user_args[arg]
+
+            if arg == 'registry':
+                print("NOTICE - overriding config registry with " + sval)
+
+            active_config[usekey]['options'][arg] = sval
 
     # check replay outdir actually contains a run...
     if args['replay']:

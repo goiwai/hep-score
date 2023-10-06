@@ -216,19 +216,25 @@ class HEPscore():
         if 'addarch' in self.settings:
             self.addarch = self.settings['addarch']
 
+        # Allow overrides of ncores and registry via options
+        for optov in ('ncores', 'registry'):
+            if optov in self.options:
+                self.settings[optov] = self.options[optov]
+
         if 'ncores' in self.settings:
-            self.ncores = int(self.confobj['settings']['ncores'])
+            self.ncores = int(self.settings['ncores'])
 
         if 'clean' in self.options:
-            self.clean = self.confobj['options']['clean']
+            self.clean = self.options['clean']
             if self.clean and self.cec == 'singularity':
                 # Set absolute path location for scache
                 self.scache = os.path.abspath(self.resultsdir + '/scache')
+
         if 'clean_files' in self.confobj.get('options', {}):
-            self.clean_files = self.confobj['options']['clean_files']
+            self.clean_files = self.options['clean_files']
 
         if 'userns' in self.options:
-            self.userns = self.confobj['options']['userns']
+            self.userns = self.options['userns']
 
         self.confobj.pop('options', None)
         self.validate_conf()
