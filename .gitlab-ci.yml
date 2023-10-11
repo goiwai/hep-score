@@ -159,6 +159,7 @@ kv_run_cc7:
       when: always
 
 build_wheels:
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-benchmark-suite/hep-benchmark-suite-cc7:latest
   stage: deploy
   only:
     - tags
