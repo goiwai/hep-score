@@ -1,4 +1,4 @@
-hepscore:
+hepscore_benchmark:
   settings:
     name: HEPscoreCI
     reference_machine: 'Unknown'
@@ -12,7 +12,7 @@ hepscore:
     method: geometric_mean #or any other algorithm
     container_exec: singularity
   benchmarks:
-    .hello-world-c7-ma-bmk:
+    hello-world-c7-ma-bmk:
       results_file: hello-world-c7-ma_summary.json
       version: ci-v1.0
       ref_scores:

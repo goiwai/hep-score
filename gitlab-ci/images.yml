@@ -1,0 +1,22 @@
+# Build the tox image (which is used to test the hep-score package)
+# Use new CERN ci-tools (July 2019, BMK-113): see https://cern.service-now.com/service-portal/article.do?n=KB0005851
+# Adapted from https://gitlab.cern.ch/gitlabci-examples/build_docker_image/blob/master/.gitlab-ci.yml
+# Kaniko is the recommended method for running Docker-builds as of May 2019. 
+# See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html for GitLab's documentation.
+build_image_tox:
+  stage: build-testing-image
+  image: # NB enable shared runners and do not specify a CI tag
+    name: gitlab-registry.cern.ch/ci-tools/docker-image-builder # CERN version of the Kaniko image
+    entrypoint: [""]
+  only:
+    changes:
+    - docker-images/tox/Dockerfile
+    variables:
+    - $CI_COMMIT_BRANCH =~ /^qa.*$/
+  script:
+    # Prepare Kaniko configuration file
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    # Build and push the image from the Dockerfile at the root of the project.
+    # To push to a specific docker tag, amend the --destination parameter, e.g. --destination $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
+    # See https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#variables-reference for available variables
+    - /kaniko/executor --context $CI_PROJECT_DIR/docker-images/tox --dockerfile $CI_PROJECT_DIR/docker-images/tox/Dockerfile --destination $CI_REGISTRY_IMAGE/tox:latest
