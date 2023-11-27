@@ -1,0 +1,58 @@
+
+pep8:
+  stage: unit-test
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  dependencies: []
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+  script:
+    - mkdir -p public/badges public/lint
+    - echo undefined > public/badges/$CI_JOB_NAME.score
+    - tox -e pep8 | tee pylint.txt
+    - sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt > public/badges/$CI_JOB_NAME.score
+    - tox -q -e pep8 -- -f pylint_gitlab.GitlabCodeClimateReporter > codeclimate.json
+    - sed -i "/]/q" codeclimate.json
+  after_script:
+    - tox -e badge -- $(cat public/badges/$CI_JOB_NAME.score)
+    - echo "Your score is $(cat public/badges/$CI_JOB_NAME.score)"
+  artifacts:
+    paths:
+      - public
+    reports:
+      codequality: codeclimate.json
+    when: always
+
+python36:
+  stage: unit-test
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+  script:
+    - tox
+  artifacts:
+    reports:
+      junit: report.xml
+    expire_in: 1 week
+    when: always
+
+security:
+  stage: unit-test
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+  script:
+    - tox -e bandit    
+
+test_python_support:
+  # determine minimum supported python version
+  stage: unit-test
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  script:
+    - python3 -m pip install vermin
+    - vermin -vv .
+  only:
+    changes:
+      - "**/*.py"

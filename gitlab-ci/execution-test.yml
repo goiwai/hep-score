@@ -1,0 +1,105 @@
+
+# Test HEPscore can run on ARM and x86 using
+# - native docker
+# - singularity accessing native docker
+# - singularity accessing sif images
+hw-sing-x86:
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
+  dependencies: []  # to avoid artifacts from previous jobs
+  tags:
+    - cvmfs
+  stage: execution-test
+  script:
+    # Run the ci_hello_world.sh script limiting the number of cores to 8
+    # so that the configs nproc, nproc_conf, default will use 8
+    # independently from the number of cores in the runners
+    - nproc; taskset -ac 0-7 nproc  # just as a crosscheck
+    - taskset -ac 0-7 $CI_PROJECT_DIR/hepscore/tests/ci_hello_world.sh $container_exec $container_uri $ncores /tmp/HEPSCORE/$CI_JOB_ID | tee helloworld_out_$CI_JOB_ID.log
+  after_script:
+    - tar -czf hep-score-test.tgz /tmp/HEPSCORE/$CI_JOB_ID
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^qa.*$/
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qa.*$/ # to test a branch before merging in qa
+  artifacts:
+      paths:
+        - hep-score-test.tgz
+        - helloworld_out_$CI_JOB_ID.log
+      expire_in: 1 week
+      when: always
+  variables: 
+    container_exec: singularity
+    container_uri: oras
+    ncores: 4
+  parallel:
+    matrix:
+      - container_uri: [oras, docker, dir]
+        ncores: [2, nproc, conf, nproc_conf, default]
+
+hw-sing-aarch64:
+  tags:
+    - k8s-arm
+  extends: hw-sing-x86
+
+hw-docker-x86:
+  tags:
+    - hep-benchmarks  
+    - x86_64          # CC7 and wl-builder/dind images are only available for x86
+  extends: hw-sing-x86
+  variables: 
+    container_exec: docker
+    container_uri: docker
+  parallel:
+    matrix:
+      - ncores: [2, nproc, conf, nproc_conf, default]
+
+hw-docker-aarch64:
+  tags:
+    - hep-benchmarks
+    - aarch64
+  extends: hw-docker-x86
+
+# Job to collect results of the hw-(sing/docker)-(x86/aarch64)
+# and build a table to be inspected
+collect-test-results:
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
+  dependencies: 
+    - hw-sing-x86
+    - hw-sing-aarch64
+    - hw-docker-x86
+    - hw-docker-aarch64
+  tags:
+    - cvmfs
+  stage: collect-test
+  script:
+    - $CI_PROJECT_DIR/hepscore/tests/ci_collect_results.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^qa.*$/
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qa.*$/ # to test a branch before merging in qa
+  artifacts:
+      paths:
+        - test_summary_table.txt
+        - intermediate_out_file.txt
+        - helloworld_out_*.log
+      expire_in: 1 week
+      when: always
+
+.kv_run_cc7:
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
+  tags:
+    - hep-benchmarks
+    - x86_64
+  stage: test
+  script:
+    - yum -y install bats
+    - $CI_PROJECT_DIR/hepscore/tests/run_bat_tests.sh
+  after_script:
+    - tar -czf hep-score-test.tgz /tmp/HEPSCORE/$CI_JOB_ID
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^qa.*$/
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qa.*$/ # to test a branch before merging in qa
+  artifacts:
+      paths:
+        - hep-score-test.tgz
+      expire_in: 1 week
+      when: always
+

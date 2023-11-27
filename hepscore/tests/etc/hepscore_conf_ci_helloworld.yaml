@@ -15,7 +15,7 @@ hepscore:
   benchmarks:
     hello-world-c7-ma-bmk:
       results_file: hello-world-c7-ma_summary.json
-      version: ci-v1.0
+      version: v1.0
       ref_scores:
         gen: 1
       args:

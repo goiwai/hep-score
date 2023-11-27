@@ -1,59 +1,170 @@
 #!/bin/bash -e
 
-function run_test(){
-    echo "[ci_hello_world.sh] running run_test $@"
-    config=$1
-    workdir=$2
-    shift
-    shift
-    [[ "$@" != "" ]] && options=" $@ " 
-    echo "[ci_hello_world.sh] dump config $config"
-    cat $config
+# This script is supposed to test the installation and execution of hepscore
+# with the following scenarios (configurable via cli args)
+# container_engine: singularity or docker
+# container_uri: (only valid when running with singularity)
+#                oras (i.e. sif images), 
+#                docker (i.e. docker images), 
+#                dir (i.e. cvmfs images)
+# ncores: 
+#          an integer (passed by --ncores arg)
+#          "nproc"    (i.e. the runner core number passed by --ncores arg), 
+#          "conf"     (i.e. use the value in the config file, without passing anything via cli)
+#          "nproc_conf" (i.e. use the nproc value in the config file, without passing anything via cli)
+#          "default"  (i.e. use the default value of the workloads, without passing anything via cli)
+#
+# The test is considered passed if the hepscore json report contains expected values for:
+#          - container_engine
+#          - registry uri
+#          - configured number of cores
+#          - score equal to configured number of cores (as reported by hello-world workloads) * scaling factor
 
-    hep-score $options -v -f $config $workdir 2>&1 | tee  ${workdir}/outlog
 
-    output_file=$(grep "Written output" ${HEPSCOREWD}/outlog | rev | cut -d ' ' -f1 | rev)
-    echo "[ci_hello_world.sh] output_file is ${output_file}"
-    validate=$(cat $output_file | jq '.settings.ncores * .settings.scaling == .score')
-    if [ "$validate" == "false" ]; then
-        echo -e "\n@@@@@@@@@@@@@@@@@\n [ci_hello_world.sh] results does not scale with cores. Dumping result file and FAIL\n@@@@@@@@@@@@@@@@@\n"
-        cat $output_file | jq
-        exit 1
-    else
-        echo -e "\n@@@@@@@@@@@@@@@@@\n [ci_hello_world.sh] Test passed \n@@@@@@@@@@@@@@@@@\n"
-    fi
+function pretty_print(){
+  Ncomponents=$((${#FUNCNAME[@]}-1))
+  Fname="ci_hello_world.sh"
+  echo -e "\n------------------------------------------------------------------------------
+[$Fname] $@
+------------------------------------------------------------------------------\n"
 }
 
-function test_ncores(){
-    config=$1
-    workdir=$2
 
-    echo -e "\n@@@@@@@@@@@@@@@@@\n [ci_hello_world.sh] Number of cores defined in settings\n@@@@@@@@@@@@@@@@@\n"
-    run_test $config $workdir
+[[ "$@" == "" ]] && pretty_print "Please pass cli arguments. Exiting" && exit 1
 
-    echo -e "\n@@@@@@@@@@@@@@@@@\n Number of cores defined via command line\n@@@@@@@@@@@@@@@@@\n"
-    run_test $config $workdir  '--ncores 2'
+TEST_SEED=$RANDOM
 
-}
+INPUT_CNT_ENGINE=$1
+INPUT_CNT_URI=$2
+INPUT_NCORES=$3
+HEPSCOREWD=$4
 
-echo "[ci_hello_world.sh] HEPSCORECONF ${HEPSCORECONF}"
-echo "[ci_hello_world.sh] HEPSCORECONF_DOCKER ${HEPSCORECONF_DOCKER}"
-cat ${HEPSCORECONF} | sed -e "s@addarch: true@addarch: false@" -e "s@container_uri: oras@container_uri: docker@" > ${HEPSCORECONF_DOCKER}
+INPUT_HASH=38f78bff072a61714f99756e220bd68b4b503b82f98b2cdaaee177b58e7c7f8b
 
-echo -e "\n@@@@@@@@@@@@@@@@@\n [ci_hello_world.sh] Run with Apptainer on sif images\n@@@@@@@@@@@@@@@@@\n "
-test_ncores ${HEPSCORECONF} ${HEPSCOREWD}
+# Discover project dir
+if [ -z $BASEDIR ]; then
+    # go to project basedir
+    cd "$(dirname $(readlink -f $0))/../.."
+    BASEDIR=$(pwd)
+fi
 
+# Test configuration (singularity)
+HEPSCORECONF=$BASEDIR/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
 
-echo -e "\n@@@@@@@@@@@@@@@@@\n [ci_hello_world.sh] Run with Apptainer on docker images\n@@@@@@@@@@@@@@@@@\n "
-test_ncores ${HEPSCORECONF_DOCKER} ${HEPSCOREWD}
+[ -z $HEPSCOREWD ] && HEPSCOREWD=/tmp/wd_${TEST_SEED}
 
-# echo "Run with Docker on docker images"
-# sed -i ${HEPSCORECONF_DOCKER} -e "s@container_exec: singularity@container_exec: docker@"
-# cat ${HEPSCORECONF_DOCKER}
-# hep-score -v -f ${HEPSCORECONF_DOCKER} ${HEPSCOREWD}
+[ ! -d "$HEPSCOREWD" ] && mkdir -p $HEPSCOREWD
 
-    # - echo "Run with singularity on cvmfs images"
-    # - | 
-    #   sed -i ${HEPSCORECONF} -e "s@container_uri: oras@container_uri: dir@"
-    # - cat ${HEPSCORECONF}
-    # - hep-score -v -f ${HEPSCORECONF} $CI_PROJECT_DIR/hepscore/tests/data/HEPscore_ci/
+# make a copy of the config
+cp ${HEPSCORECONF} ${HEPSCOREWD}/hepscore_conf_ci_helloworld.yaml
+HEPSCORECONF=${HEPSCOREWD}/hepscore_conf_ci_helloworld.yaml
+
+chmod a+rw $HEPSCOREWD
+pretty_print "variables \n
+INPUT_CNT_ENGINE=${INPUT_CNT_ENGINE}
+INPUT_CNT_URI=${INPUT_CNT_URI}
+INPUT_NCORES=${INPUT_NCORES}
+BASEDIR=$BASEDIR
+HEPSCORECONF=${HEPSCORECONF}
+HEPSCOREWD=${HEPSCOREWD}
+"
+
+if [ ${INPUT_NCORES} == "nproc" ]; then
+    NCORES=$(nproc)
+    pretty_print "INPUT_NCORES is 'nproc'. Setting it to '${NCORES} and passing it to hepscore via cli'"
+    ARGS_NCORE="--ncores ${NCORES}"
+elif [ -z "${INPUT_NCORES//[0-9]*}" ]; then
+    declare -i NCORES=${INPUT_NCORES}
+    pretty_print "Passing to hepscore --ncores=${NCORES}"
+    ARGS_NCORE="--ncores ${NCORES}"
+elif [ ${INPUT_NCORES} == "conf" ]; then
+    # use the ncores config in 
+    # the hepscore config yaml file
+    # cast to int to remove white spaces
+    declare -i NCORES=$(grep "ncores" $HEPSCORECONF | cut -d: -f2 )
+    pretty_print "INPUT_NCORES is 'conf'. Passing nothing to hepscore via cli"
+    ARGS_NCORE=""
+elif [ ${INPUT_NCORES} == "nproc_conf" ]; then
+    # use the ncores config in 
+    # the hepscore config yaml file
+    # cast to int to remove white spaces
+    #sed -e "s@^(\W*ncores\W*:\W*)([0-9]*)$@\1 $newvalue@" -i ${HEPSCORECONF}
+    newvalue=$(nproc)
+    sed -e "s@^\(\W*ncores\W*:\W*\)\([0-9]*\)\$@\1 $newvalue@" -i ${HEPSCORECONF}
+    declare -i NCORES=$(grep "ncores" $HEPSCORECONF | cut -d: -f2 )
+    pretty_print "INPUT_NCORES is 'nproc_in_conf'. Replacing ncores in the cfg file ${HEPSCORECONF}. Passing nothing to hepscore via cli"
+    ARGS_NCORE=""
+elif [ ${INPUT_NCORES} == "default" ]; then
+    # use the default value of the workloads
+    # that in this test is to saturate nproc
+    pretty_print "INPUT_NCORES is 'default': removing ncores from the cfg file ${HEPSCORECONF}. Passing nothing to hepscore via cli"
+    sed -e 's@^\W*ncores\W*:\W*[0-9]*$@@' -i ${HEPSCORECONF}
+    ARGS_NCORE=""
+else
+    pretty_print "Input parameter INPUT_NCORES is not a valid one. Exiting." 
+    exit 1
+fi
+
+penv=${HEPSCOREWD}/bmkenv_${TEST_SEED}
+pretty_print "Install hepscore in python env  $penv"
+python3 -m venv $penv
+source $penv/bin/activate
+pip3 install .
+
+pretty_print "dump config ${HEPSCORECONF}"
+cat ${HEPSCORECONF}
+
+output_file="${HEPSCOREWD}/results.json"
+pretty_print "output_file is ${output_file}"
+
+hep-score -v \
+    --container_uri ${INPUT_CNT_URI} \
+    --container_exec ${INPUT_CNT_ENGINE} \
+    ${ARGS_NCORE} \
+    -f ${HEPSCORECONF} \
+    -o $output_file ${HEPSCOREWD} 2>&1 #| tee  ${workdir}/outlog
+
+#output_file=$(grep "Written output" ${HEPSCOREWD}/outlog | rev | cut -d ' ' -f1 | rev)
+if [ ! -f ${output_file} ]; then
+    pretty_print "Outputfile ${output_file} not found. FAIL"
+    exit 1
+fi
+
+# Here starts the validation of the reported json
+settings_container_exec=$(cat $output_file | jq --raw-output '.settings.container_exec')
+settings_container_uri=$(cat $output_file  | jq -r '.settings.registry' | cut -d":" -f1)
+settings_scaling=$(cat $output_file | jq --raw-output '.settings.scaling')
+score=$(cat $output_file | jq --raw-output '.score')
+config_hash=$(cat $output_file | jq --raw-output '.app_info.config_hash')
+if [ ${INPUT_NCORES} == "default" ]; then
+    # in this case settings.ncores does not exists in the reported json file
+    # enforcing this equality
+    settings_ncores=$(nproc)
+    NCORES=$(nproc)
+else
+    settings_ncores=$(cat $output_file | jq --raw-output '.settings.ncores')
+fi
+validate_score=$(echo "$settings_scaling * $settings_ncores - $score" | bc)
+
+pretty_print "Resumed table:
+@ARCH=$(uname -m)
+@INPUT_CNT_ENGINE=${INPUT_CNT_ENGINE}
+@INPUT_CNT_URI=${INPUT_CNT_URI}
+@INPUT_NCORES=${INPUT_NCORES}
+@NCORES=${NCORES}
+@HASH=${config_hash}
+"
+
+if [[ \
+    ( ${validate_score} -eq 0 ) && \
+    ( "${settings_ncores}" == ${NCORES} ) && \
+    ( "${settings_container_exec}" == ${INPUT_CNT_ENGINE}) && \
+    ( "${settings_container_uri}" == ${INPUT_CNT_URI})
+    ]]; then
+    pretty_print "!!!!!!Test passed!!!!!!"
+else
+    pretty_print "Test asserts False. Dumping result file and FAIL"
+    cat $output_file | jq
+    exit 1
+    
+fi
