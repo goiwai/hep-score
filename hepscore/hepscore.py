@@ -145,7 +145,7 @@ class HEPscore():
     clean = False
     clean_files = False
     userns = False
-    ncores = 0
+    ncores = 0  # ncores==0 is interpreted as default. hepscore does not force changes in the wl configs
     addarch = False
     valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
     valid_curis = {
@@ -221,8 +221,16 @@ class HEPscore():
             if optov in self.options:
                 self.settings[optov] = self.options[optov]
 
-        if 'ncores' in self.settings:
+        # BMK-1388 do not enforce ncores if the passed value is equal to cpu_counts (the default running config)
+        # otherwise the hash will be changed without reason
+        # replace os.cpu_count() with len(os.sched_getaffinity(0)) to take into account
+        # the case of hepscore limited by taskset
+        if 'ncores' in self.settings and int(self.settings['ncores']) != len(os.sched_getaffinity(0)):
             self.ncores = int(self.settings['ncores'])
+        else:
+            # put settings.ncores to 0, to report always an ncores in the hash
+            self.ncores=0
+            self.settings['ncores'] = self.ncores
 
         if 'clean' in self.options:
             self.clean = self.options['clean']

@@ -5,8 +5,6 @@ stages:
   - collect-test
   - build-wheels
 
-
-
 include: 'gitlab-ci/**.yml'
 
 

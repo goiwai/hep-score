@@ -22,7 +22,6 @@
 
 
 function pretty_print(){
-  Ncomponents=$((${#FUNCNAME[@]}-1))
   Fname="ci_hello_world.sh"
   echo -e "\n------------------------------------------------------------------------------
 [$Fname] $@
@@ -39,8 +38,6 @@ INPUT_CNT_URI=$2
 INPUT_NCORES=$3
 HEPSCOREWD=$4
 
-INPUT_HASH=38f78bff072a61714f99756e220bd68b4b503b82f98b2cdaaee177b58e7c7f8b
-
 # Discover project dir
 if [ -z $BASEDIR ]; then
     # go to project basedir
@@ -49,14 +46,14 @@ if [ -z $BASEDIR ]; then
 fi
 
 # Test configuration (singularity)
-HEPSCORECONF=$BASEDIR/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
+[ -z $BASECONF ] && BASECONF=$BASEDIR/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
 
 [ -z $HEPSCOREWD ] && HEPSCOREWD=/tmp/wd_${TEST_SEED}
 
 [ ! -d "$HEPSCOREWD" ] && mkdir -p $HEPSCOREWD
 
 # make a copy of the config
-cp ${HEPSCORECONF} ${HEPSCOREWD}/hepscore_conf_ci_helloworld.yaml
+cp ${BASECONF} ${HEPSCOREWD}/hepscore_conf_ci_helloworld.yaml
 HEPSCORECONF=${HEPSCOREWD}/hepscore_conf_ci_helloworld.yaml
 
 chmod a+rw $HEPSCOREWD
@@ -64,7 +61,8 @@ pretty_print "variables \n
 INPUT_CNT_ENGINE=${INPUT_CNT_ENGINE}
 INPUT_CNT_URI=${INPUT_CNT_URI}
 INPUT_NCORES=${INPUT_NCORES}
-BASEDIR=$BASEDIR
+BASEDIR=${BASEDIR}
+BASECONF=${BASECONF}
 HEPSCORECONF=${HEPSCORECONF}
 HEPSCOREWD=${HEPSCOREWD}
 "
@@ -136,14 +134,14 @@ settings_container_uri=$(cat $output_file  | jq -r '.settings.registry' | cut -d
 settings_scaling=$(cat $output_file | jq --raw-output '.settings.scaling')
 score=$(cat $output_file | jq --raw-output '.score')
 config_hash=$(cat $output_file | jq --raw-output '.app_info.config_hash')
-if [ ${INPUT_NCORES} == "default" ]; then
-    # in this case settings.ncores does not exists in the reported json file
-    # enforcing this equality
-    settings_ncores=$(nproc)
-    NCORES=$(nproc)
-else
-    settings_ncores=$(cat $output_file | jq --raw-output '.settings.ncores')
-fi
+
+# Translate INPUT_NCORES} == "default" into the numeric value NCORES=nproc
+[[ ${INPUT_NCORES} == "default" ]] && NCORES=$(nproc)
+    
+settings_ncores=$(cat $output_file | jq --raw-output '.settings.ncores')
+
+# If settings_ncores == 0, assign the default nproc
+[[ ${settings_ncores} -eq 0 ]] && settings_ncores=$(nproc)
 validate_score=$(echo "$settings_scaling * $settings_ncores - $score" | bc)
 
 pretty_print "Resumed table:

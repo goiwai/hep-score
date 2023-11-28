@@ -679,10 +679,11 @@
         "retries": 1,
         "scaling": 355,
         "container_exec": "singularity",
-        "replay": false
+        "replay": false,
+        "ncores": 0
     },
     "app_info": {
-        "config_hash": "0941b7238963f5f292338b04b8165dc432e20283cd817f6bd6f9c5dbfd14fb02",
+        "config_hash": "da527a895e2bf52445939c09f85afd16653c71bbd198670c4991f31f3c1c182d",
         "hepscore_ver": "1.0.0.0rc12.dev18"
     },
     "environment": {
