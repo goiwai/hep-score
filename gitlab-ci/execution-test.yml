@@ -71,7 +71,7 @@ collect-test-results:
     - cvmfs
   stage: collect-test
   script:
-    - $CI_PROJECT_DIR/hepscore/tests/ci_collect_results.sh
+    - $CI_PROJECT_DIR/hepscore/tests/ci_collect_results.py  "helloworld_out_*.log" | tee test_summary_table.txt
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^qa.*$/
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qa.*$/ # to test a branch before merging in qa
