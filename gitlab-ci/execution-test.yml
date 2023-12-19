@@ -44,6 +44,7 @@ hw-docker-x86:
   tags:
     - hep-benchmarks  
     - x86_64          # CC7 and wl-builder/dind images are only available for x86
+    - no-gpu
   extends: hw-sing-x86
   variables: 
     container_exec: docker
@@ -56,6 +57,7 @@ hw-docker-aarch64:
   tags:
     - hep-benchmarks
     - aarch64
+    - no-gpu
   extends: hw-docker-x86
 
 # Job to collect results of the hw-(sing/docker)-(x86/aarch64)
@@ -83,12 +85,12 @@ collect-test-results:
       expire_in: 1 week
       when: always
 
-.kv_run_cc7:
+kv_run_cc7:
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
   tags:
     - hep-benchmarks
     - x86_64
-  stage: test
+  stage: execution-test
   script:
     - yum -y install bats
     - $CI_PROJECT_DIR/hepscore/tests/run_bat_tests.sh

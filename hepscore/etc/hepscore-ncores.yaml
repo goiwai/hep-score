@@ -1,0 +1,79 @@
+hepscore:
+  benchmarks:
+    atlas-gen_sherpa-ma-bmk:
+      results_file: atlas-gen_sherpa-ma_summary.json
+      ref_scores:
+        gen: 38.58
+      weight: 1.0
+      version: v2.1
+      args:
+        threads: 1
+        events: 200
+    atlas-reco_mt-ma-bmk:
+      results_file: atlas-reco_mt-ma_summary.json
+      ref_scores:
+        reco: 9.062
+      weight: 1.0
+      version: v2.3
+      args:
+        threads: 4
+        events: 100
+    cms-gen-sim-run3-ma-bmk:
+      results_file: cms-gen-sim-run3-ma_summary.json
+      ref_scores:
+        gen-sim: 2.665
+      weight: 1.0
+      version: v1.1
+      args:
+        threads: 4
+        events: 20
+    cms-reco-run3-ma-bmk:
+      results_file: cms-reco-run3-ma_summary.json
+      ref_scores:
+        reco: 4.814
+      weight: 1.0
+      version: v1.2
+      args:
+        threads: 4
+        events: 50
+    lhcb-sim-run3-ma-bmk:
+      results_file: lhcb-sim-run3-ma_summary.json
+      ref_scores:
+        sim: 1950
+      weight: 1.0
+      version: v1.1
+      args:
+        threads: 1
+        events: 10
+    belle2-gen-sim-reco-ma-bmk:
+      results_file: belle2-gen-sim-reco-ma_summary.json
+      ref_scores:
+        gen-sim-reco: 15.4
+      weight: 1.0
+      version: v2.2
+      args:
+        threads: 1
+        events: 50
+    alice-digi-reco-core-run3-ma-bmk:
+      results_file: alice-digi-reco-core-run3-ma_summary.json
+      ref_scores:
+        digi-reco: 0.762
+      weight: 1.0
+      version: v2.2
+      args:
+        threads: 4
+        events: 10
+  settings:
+    name: HEPScore23
+    reference_machine: "E423521X1B04810-B Gold 6326 CPU @ 2.90GHz - 64 cores SMT ON"
+    registry:
+      - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+      - docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+      - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+    addarch: true
+    method: geometric_mean
+    repetitions: 3
+    retries: 1
+    scaling: 1018
+    container_exec: singularity
+
