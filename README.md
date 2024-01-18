@@ -1,63 +1,29 @@
-# HEPscore
+# HEPScore
 
 ## Table of Contents
 
 1. [About](#about)  
-2. [HEPscore23 Benchmark](#hepscore23-benchmark)
-3. [Downloading and Installing HEPscore](#downloading-and-installing-hepscore)  
+2. [HEPScore23 Benchmark](#hepscore23-benchmark)
+3. [Downloading and Installing HEPScore](#downloading-and-installing-hepscore)  
     1.  [Installing on Systems Without External Network Connectivity](#installing-on-systems-without-external-network-connectivity)  
 4. [Dependencies](#dependencies)  
-5. [Running HEPscore](#running-hepscore)  
-6. [Configuring HEPscore](#configuring-hepscore)  
+5. [Running HEPScore](#running-hepscore)  
+6. [Configuring HEPScore](#configuring-hepscore)  
     1. [Parameters](#parameters)  
 7. [Feedback and Support](#feedback-and-support)
 
 ## About
 
-The HEPscore application orchestrates the execution of user-configurable
+The HEPScore application orchestrates the execution of user-configurable
 benchmark suites based on individual benchmark containers.  
 It runs the specified benchmark containers in sequence, collects their 
 results, and computes a final overall score.  
 
-HEPscore is specifically designed for use with containers from the 
-[HEP Workloads project](https://gitlab.cern.ch/hep-benchmarks/hep-workloads).
-However, any benchmark containers stored in a Docker/Singularity
-registry, or filesystem directory, which conform to the HEP Workloads'
-output JSON schema, are potentially usable.  
+For instructions on how to run the HEPScore23 benchmark, please refer to the [dedicated HEPiX Benchmark page](https://w3.hepix.org/benchmarking/how_to_run_HS23.html). The HEPScore23 scores for the benchmarked servers are reported in this [table](https://w3.hepix.org/benchmarking/scores_HS23.html).
 
-Both Singularity (including Apptainer and SingularityCE) and Docker are
-supported for container execution.  While Podman is not yet officially 
-supported, tests have shown that it is functional with HEPscore and workloads
-from the HEP Workloads project as long as a "docker" symlink exists to the 
-"podman" binary, and the open file descriptor ulimit can be set to 100k or 
-higher (this may require administrator privileges).
+## HEPScore23 Benchmark
 
-By default, if no configuration is passed to HEPscore, the "HEPscore23"
-benchmark is run.
-
-## HEPscore Score Computation
-
-The HEPscore value for a given configuration is computed as the geometric
-mean of the performance scores measured on a given server when running each 
-workload included in that configuration. (Note: the workload performance score
-is in general expressed as the event throughput of the workload process.)
-
-Each workload score is normalised to the score of the reference server, in
-order to make it a dimensionless factor.  The reference server model is 
-reported in the configuration settings (check for key “reference_machine").
-The reference server for HEPscore23 is: 
-“Intel CPU Gold 6326 CPU @ 2.90GHz - 64 cores SMT ON"
-
-The normalised scores are then averaged, using the geometric mean, and are
-rescaled to the scale value reported in the configuration settings
-(check for key “scaling”). The obtained value is the HEPscore score.
-Therefore, by definition, the scaling value is the HEPscore score of the
-reference server.  The scaling value for HEPscore23 is defined as the HS06 
-(32 bits) score value for the very same reference server (HS06 = 1018).
-
-## HEPscore23 Benchmark
-
-HEPscore23 is a benchmark based on containerized HEP workloads that
+HEPScore23 is a benchmark based on containerized HEP workloads that
 is replacing HEPSPEC06 as the standard HEPiX/WLCG benchmark.  It is consists 
 of the following workloads:
 [HEP Workloads project](
@@ -70,7 +36,7 @@ lhcb-sim-run3-ma-bmk
 belle2-gen-sim-reco-ma-bmk  
 alice-digi-reco-core-run3-ma-bmk  
 
-You can view the YAML HEPscore configuration for HEPscore23 by
+You can view the YAML HEPScore configuration for HEPScore23 by
 executing ```hep-score -p```.
 
 The benchmark will take 5+ hours to execute on modern hardware.
@@ -78,7 +44,7 @@ The benchmark will take 5+ hours to execute on modern hardware.
 **NOTE**: ~35 GB of free disk space in your Singularity or Docker
 cache area, and 320 MB/core of free space (e.g. 20 GB on 64 core host)
 in the specified OUTDIR output directory is necessary to run the
-HEPscore23 benchmark.  If passed the ```-c``` (clean images) and
+HEPScore23 benchmark.  If passed the ```-c``` (clean images) and
 ```-C``` (clean files) command line options, hep-score will clean
 the benchmark container images and output after execution, which will 
 greatly reduce the amount of space needed to run.
@@ -89,9 +55,49 @@ by passing ```hep-score``` the ```-i dir``` parameter.  When running the
 benchmark using the unpacked images in CVMFS, the Singularity cache area
 is not utilized.
 
-## Downloading and Installing HEPscore
+## HEPScore detailed
 
-HEPscore must be installed using pip (<https://pypi.org/project/pip/>).  
+HEPScore is specifically designed for use with containers from the 
+[HEP Workloads project](https://gitlab.cern.ch/hep-benchmarks/hep-workloads).
+However, any benchmark containers stored in a Docker/Singularity
+registry, or filesystem directory, which conform to the HEP Workloads'
+output JSON schema, are potentially usable.  
+
+Both Singularity (including Apptainer and SingularityCE) and Docker are
+supported for container execution.  While Podman is not yet officially 
+supported, tests have shown that it is functional with HEPScore and workloads
+from the HEP Workloads project as long as a "docker" symlink exists to the 
+"podman" binary, and the open file descriptor ulimit can be set to 100k or 
+higher (this may require administrator privileges).
+
+By default, if no configuration is passed to HEPScore, the "HEPScore23"
+benchmark is run.
+
+### HEPScore Score Computation
+
+The HEPScore value for a given configuration is computed as the geometric
+mean of the performance scores measured on a given server when running each 
+workload included in that configuration. (Note: the workload performance score
+is in general expressed as the event throughput of the workload process.)
+
+Each workload score is normalised to the score of the reference server, in
+order to make it a dimensionless factor.  The reference server model is 
+reported in the configuration settings (check for key “reference_machine").
+The reference server for HEPScore23 is: 
+“Intel CPU Gold 6326 CPU @ 2.90GHz - 64 cores SMT ON"
+
+The normalised scores are then averaged, using the geometric mean, and are
+rescaled to the scale value reported in the configuration settings
+(check for key “scaling”). The obtained value is the HEPScore score.
+Therefore, by definition, the scaling value is the HEPScore score of the
+reference server.  The scaling value for HEPScore23 is defined as the HS06 
+(32 bits) score value for the very same reference server (HS06 = 1018).
+
+
+
+## Downloading and Installing HEPScore
+
+HEPScore must be installed using pip (<https://pypi.org/project/pip/>).  
 
 To install as a regular user (suggested):  
 ```$ pip install --user git+https://gitlab.cern.ch/hep-benchmarks/hep-score.git```  
@@ -115,32 +121,32 @@ the default python installation, it may be necessary to use ```pip3``` to
 install instead of ```pip```.
 
 ### Installing on Systems Without External Network Connectivity
-Release tarfiles containing the Python wheel for the hepscore package, as
+Release tarfiles containing the Python wheel for the HEPScore package, as
 well as all dependency wheels, are available/published in the
-[HEPscore release documentation](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/releases).
+[HEPScore release documentation](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/releases).
 An archive of all released wheel tarfiles is also available here: 
 <https://hep-benchmarks.web.cern.ch/hep-score/releases/>.
-These wheels can be used to install HEPscore via pip on hosts without
+These wheels can be used to install HEPScore via pip on hosts without
 network connectivity.  To install, after downloading and untarring a
 release tarfile, execute ```pip install --user hepscore_wheels/*.whl```.
 
-x86_64 and aarch64 tarfiles containing all of the workloads used in HEPscore23
+x86_64 and aarch64 tarfiles containing all of the workloads used in HEPScore23
 are available here: <https://hep-benchmarks.web.cern.ch/hep-score/workloads>.
 After untaring, the local workloads can be used with hep-score by passing the
 directory with the ```-R``` or ```--registry``` options, i.e.:
 ```hep-score --registry dir:///PATH/TO/UNTARRED/WORKLOADS/hs23-workloads /tmp```
 
-## Dependencies
+### Dependencies
 
-HEPscore requires a **Python 3.6+** installation.  The pip installation will pull
-in all python module dependencies.  HEPscore should be used with **Apptainer 1.1.3
+HEPScore requires a **Python 3.6+** installation.  The pip installation will pull
+in all python module dependencies.  HEPScore should be used with **Apptainer 1.1.3
 and newer**, **Singularity 3.5.3 and newer**, or **Docker 1.13 and newer**.  There are 
-some known issues when using HEPscore with earlier Singularity and Docker releases.
+some known issues when using HEPScore with earlier Singularity and Docker releases.
 
 **NOTE**: if you are running hep-score on a host with over 100 cores, it may be
 necessary to increase your max user processes ulimit before execution.
 
-## Running HEPscore
+## Running HEPScore
 
 ```sh
 usage: hep-score [-h] [-m [{singularity,docker}]]
@@ -217,9 +223,9 @@ also stored in a summary output JSON (or YAML, if ```-y``` is specified) file
 under OUTDIR (unless an alternative location is specified with ```-o```).  This
 file also contains all of the summary JSON output data from each sub-benchmark.
 
-## Configuring HEPscore
+### Configuring HEPScore
 
-An example hepscore YAML configuration is below:
+An example HEPScore YAML configuration is below:
 
 ```yaml
 hepscore:
@@ -394,10 +400,8 @@ being used.
 
 
 ## Feedback and Support
-Feedback, and support questions are welcome in the HEP Benchmarks Project
+Feedback and support questions are welcome primarily through [GGUS tickets](https://w3.hepix.org/benchmarking/how_to_run_HS23.html#how-to-open-a-ggus-ticket) or in the HEP Benchmarks Project
 [Discourse Forum](https://wlcg-discourse.web.cern.ch/c/hep-benchmarks).
-You can also submit issues via 
-[Gitlab](https://gitlab.cern.ch/hep-benchmarks/user-support/-/issues).
 
 |     |     |     |
 | --- | --- | --- |
