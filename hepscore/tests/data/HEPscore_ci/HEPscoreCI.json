@@ -6,85 +6,141 @@
         "scaling": 10,
         "repetitions": 2,
         "method": "geometric_mean",
+        "ncores": 0,
         "replay": false
     },
     "benchmarks": {
-        "atlas-kv-bmk": {
-            "results_file": "atlas-kv_summary.json",
-            "version": "ci2.0",
+        "belle2-gen-sim-reco-ma-bmk": {
+            "results_file": "belle2-gen-sim-reco-ma_summary.json",
+            "weight": 1.0,
+            "version": "v2.0",
             "args": {
-                "events": 3,
                 "threads": 1,
-                "copies": 2,
+                "events": 5,
                 "debug": true
             },
             "run0": {
-                "start_at": "Wed Feb 24 12:50:19 2021",
-                "end_at": "Wed Feb 24 12:52:22 2021",
-                "duration": 123,
+                "start_at": "Wed Mar  6 10:57:48 2024",
+                "end_at": "Wed Mar  6 11:03:11 2024",
+                "duration": 323,
                 "report": {
                     "wl-scores": {
-                        "sim": 2.6042
+                        "gen-sim-reco": 2.424844190594124,
+                        "gen": 25.744685422104777,
+                        "sim": 7.9663702542049455,
+                        "reco": 5.7786494126119035
                     },
                     "wl-stats": {
-                        "avg": 1.3021,
-                        "median": 1.3021,
-                        "min": 1.3021,
-                        "max": 1.3021,
-                        "count": 2
+                        "gen-sim-reco": {
+                            "count": 8,
+                            "max": 0.3082614056720099,
+                            "avg": 0.3031055238242655,
+                            "median": 0.3039514801051284,
+                            "min": 0.29550827423167847
+                        },
+                        "gen": {
+                            "count": 8,
+                            "max": 3.2467532467532467,
+                            "avg": 3.218085677763097,
+                            "median": 3.215467328370554,
+                            "min": 3.205128205128205
+                        },
+                        "sim": {
+                            "count": 8,
+                            "max": 1.0183299389002038,
+                            "avg": 0.9957962817756182,
+                            "median": 1.0040160642570282,
+                            "min": 0.9310986964618253
+                        },
+                        "reco": {
+                            "count": 8,
+                            "max": 0.7407407407407409,
+                            "avg": 0.7223311765764879,
+                            "median": 0.7209988979685195,
+                            "min": 0.7082152974504251
+                        }
                     },
                     "log": "ok"
                 }
             },
             "run1": {
-                "start_at": "Wed Feb 24 12:52:22 2021",
-                "end_at": "Wed Feb 24 12:54:25 2021",
-                "duration": 123,
+                "start_at": "Wed Mar  6 11:03:11 2024",
+                "end_at": "Wed Mar  6 11:05:05 2024",
+                "duration": 114,
                 "report": {
                     "wl-scores": {
-                        "sim": 2.6042
+                        "gen-sim-reco": 2.491636949764224,
+                        "gen": 29.630009501866414,
+                        "sim": 7.949388883567246,
+                        "reco": 5.8766332030199955
                     },
                     "wl-stats": {
-                        "avg": 1.3021,
-                        "median": 1.3021,
-                        "min": 1.3021,
-                        "max": 1.3021,
-                        "count": 2
+                        "gen-sim-reco": {
+                            "count": 8,
+                            "max": 0.31887755102040816,
+                            "avg": 0.311454618720528,
+                            "median": 0.3125239276132079,
+                            "min": 0.3004807692307692
+                        },
+                        "gen": {
+                            "count": 8,
+                            "max": 3.90625,
+                            "avg": 3.703751187733302,
+                            "median": 3.7175234936428962,
+                            "min": 3.4246575342465753
+                        },
+                        "sim": {
+                            "count": 8,
+                            "max": 1.016260162601626,
+                            "avg": 0.9936736104459057,
+                            "median": 0.9960159362549803,
+                            "min": 0.9652509652509652
+                        },
+                        "reco": {
+                            "count": 8,
+                            "max": 0.7610350076103504,
+                            "avg": 0.7345791503774994,
+                            "median": 0.737035347281062,
+                            "min": 0.7052186177715093
+                        }
                     },
                     "log": "ok"
                 }
             },
             "app": {
-                "containment": "singularity",
-                "bmk_checksum": "de7ca1d379902c23c3bdd32a53e12968",
-                "bmkdata_checksum": "4af9ca3be760f419f90e951c3fc053f5",
-                "cvmfs_checksum": "26cf8657905cb519f6a0f0f7e93647d4",
-                "description": "ATLAS KV: GEANT4 simulation of 100 single muon events, based on Athena version v17.8.0.9",
-                "version": "ci2.0"
+                "version": "v2.0",
+                "description": "belle2-gen-sim-reco-ma-bmk",
+                "cvmfs_checksum": "7846542c20b1007c94c32ed6968b195a",
+                "bmkdata_checksum": "f6819b33382c8884a5a7f7bd948145e1",
+                "bmk_checksum": "0f53bc9bc803fb9ab80283cc3bbc67f8",
+                "containment": "singularity"
             },
             "run_info": {
-                "copies": 2,
+                "copies": 8,
                 "threads_per_copy": 1,
-                "events_per_thread": 3
-            },
-            "weight": 1.0
+                "events_per_thread": 5,
+                "extra_arguments": ""
+            }
         }
     },
     "app_info": {
-        "config_hash": "bf628b11482614bbd12d2d80d89cf1d1abc3a592292582018b89945d996d85c7",
-        "hepscore_ver": "1.0.0.0rc12.dev2"
+        "config_hash": "16b4a461e08b16c0ae6b45f53035f00597b2854ad2fd1edff2340088a36880b4",
+        "hepscore_ver": "2.0.0.0rc3.dev5"
     },
     "environment": {
-        "system": "Linux",
-        "date": "Wed Feb 24 12:50:19 2021",
-        "singularity_version": "3.6.3-1.el7"
+        "system": "Linux bmk-ci-01 4.18.0-477.21.1.el8_8.x86_64 #1 SMP Thu Aug 10 13:51:50 EDT 2023 x86_64",
+        "arch": "x86_64",
+        "start_at": "Wed Mar  6 10:57:48 2024",
+        "singularity_version": "3.8.7-1.el8",
+        "end_at": "Wed Mar  6 11:05:05 2024",
+        "duration": 437
     },
     "wl-scores": {
-        "atlas-kv-bmk": {
-            "sim": 2.6042,
-            "sim_ref": 1
+        "belle2-gen-sim-reco-ma-bmk": {
+            "gen-sim-reco": 2.458240570179174,
+            "gen-sim-reco_ref": 15.4
         }
     },
-    "score": 26.042,
+    "score": 1.5965,
     "status": "success"
 }

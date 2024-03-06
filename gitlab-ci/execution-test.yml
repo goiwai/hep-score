@@ -85,7 +85,7 @@ collect-test-results:
       expire_in: 1 week
       when: always
 
-kv_run_cc7:
+run_exp_wl:
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
   tags:
     - hep-benchmarks
