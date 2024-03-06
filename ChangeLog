@@ -6,15 +6,18 @@ v2.0
 -Utilize tmp subdirectory in OUTDIR for /tmp and /var/tmp bindmounts
 -Only log failure to remove unpack directory when debugging is enabled
 -Add support for lists of registry types, with one to utilize selectable via 
-the '-i' option (BMK-1188)
+  the '-i' option (BMK-1188)
 -Change configuration key from 'hepscore_benchmark' to 'hepscore' (BMK-1175),
-but allow the 'hepscore_benchmark' key for compatibility (BMK-1219)
+  but allow the 'hepscore_benchmark' key for compatibility (BMK-1219)
 -Don't set OUTDIR scache directory as singularity cache when clean option is 
-false (BMK-1198) 
+  false (BMK-1198) 
 -Configurable number of cores to be loaded (ncores) to be passed to the
-workloads, if the workloads implement this feature
+  workloads, if the workloads implement this feature
+-Add ncores value in the yaml and the json report. 
+  ncores is consequently part of the hash (breaks backward compatibility)
+-Add a config file with the WL versions supporting ncores
 -Unset problematic Singularity/Apptainer environment variables (BMK-1273)
--Allow registry to be overriden via the command line and options field
+-Allow registry to be overriden via the command line (-R, --registry) and options field  (BMK-1290)
 
 v1.5
 ----
