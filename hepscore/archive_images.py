@@ -78,7 +78,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download images")
     parser.add_argument("-i", "--input_config", required=True, help="Path to input YAML configuration file")
     parser.add_argument("-w", "--workdir", default="hep-workloads-sif", help="Working directory to store intermediate files")
-    parser.add_argument("-o", "--output_archive", default="hep-workloads-sif", help="Path to output archive (JSON)")
     parser.add_argument("-a", "--architecture", help="Architecture type (e.g., x86_64, aarch64)")
     parser.add_argument("-r", "--remote_archive_content", default=None, help="URL to remote archive content (JSON)")
     args = parser.parse_args()
