@@ -8,7 +8,7 @@ python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH}
 STATUS=$?
 ls -Rltrh ${workdir}
 if [ "$STATUS" == "111" ]; then
-    echo "The archie already exists for the ${default_config} images"
+    echo "The archive already exists for the ${default_config} images"
 elif [ "$STATUS" == "0" ]; then
     cat ${workdir}/*.json ; echo -e "\n"
     cat ${workdir}/*_sha256sum.txt ; echo -e "\n"

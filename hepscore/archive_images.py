@@ -111,19 +111,21 @@ if __name__ == "__main__":
         remote_images_list = download_and_validate_remote_images(args.remote_archive_content, f"{key_name}.json")
         if set(local_images_list) != set(remote_images_list):
             must_download=True
-        else:
-            print("Local and remote images are identical. No need to download.")
-            sys.exit(111)
     else:
         must_download=True
     
+    with open(output_archive_images, 'w') as f:
+            json.dump(local_images_list, f)
+    print(f"List of images in {output_archive_images}")
+
     if must_download:
         download_images(local_images_list, archive_folder)
         create_tar_archive(archive_folder, output_archive_file)
-        with open(output_archive_images, 'w') as f:
-            json.dump(local_images_list, f)
+        print(f"Images downloaded successfully in archive {output_archive_file}" )
         with open(output_archive_sha256sum, "w") as f:
             f.write(generate_sha256sum(output_archive_file))
+    else:
+        print("Local and remote images are identical. No need to download.")
+        sys.exit(111)
 
-    print(f"Images downloaded successfully in archive {output_archive_file}" )
-    print(f"List of images in {output_archive_images}")
+
