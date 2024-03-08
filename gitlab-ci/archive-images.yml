@@ -11,7 +11,9 @@ archive_images:
     remote_archive: ${CI_WEB_RELEASES}/../images/archives
   script:
     - cd $CI_PROJECT_DIR
-    - pip install .
+    - yum install -y python3-pip 
+    - python3 -m pip install --upgrade pip 
+    - pip3 install .
     - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${architecture} -r ${remote_archive}
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
