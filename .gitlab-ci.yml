@@ -1,10 +1,10 @@
 stages:
-  - archive-images
   - build-testing-image
   - unit-test
   - execution-test
   - collect-test
   - build-wheels
+  - archive-images
 
 include: 'gitlab-ci/**.yml'
 
