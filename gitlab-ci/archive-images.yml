@@ -1,20 +1,22 @@
 archive_images:
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
   stage: archive-images
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
+  retry: 2
+  tags:
+    - $ARCH
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH == "BMK-1434"
   variables: 
     default_config: ${CI_PROJECT_DIR}/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
     workdir: /tmp/HEPSCORE/$CI_JOB_ID
-    architecture: "x86_64"
     remote_archive: ${CI_WEB_RELEASES}/../images/archives
   script:
     - cd $CI_PROJECT_DIR
     - yum install -y python3-pip 
     - python3 -m pip install --upgrade pip 
     - pip3 install .
-    - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${architecture} -r ${remote_archive}
+    - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
   artifacts:
@@ -24,5 +26,9 @@ archive_images:
       when: always
   parallel:
     matrix:
-      - architecture: ["x86_64", "aarch64"]
-        
+      - ARCH: [x86_64, aarch64]
+hw-sing-aarch64:
+  tags:
+    - k8s-arm
+  extends: hw-sing-x86
+
