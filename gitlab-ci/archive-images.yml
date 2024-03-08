@@ -1,7 +1,7 @@
 archive_images:
   stage: archive-images
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
-  retry: 2
+  retry: 0
   tags:
     - $ARCH
   rules:
@@ -18,9 +18,9 @@ archive_images:
     - python3 -m pip install --upgrade pip 
     - pip3 install .
     - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
-    - ls -ltr ${workdir}/*
-    - cat ${workdir}/*.json
-    - cat ${workdir}/*_sha256sum.txt
+    - ls -ltrh ${workdir}
+    - cat ${workdir}/*.json ; echo -e "\n"
+    - cat ${workdir}/*_sha256sum.txt ; echo -e "\n"
     - archive_file=`ls ${workdir}/*tar.gz`
     - echo $archive_file
     - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no ${workdir}/*.tar.gz ${workdir}/*.json ${workdir}/*_sha256sum.txt cpubmk@lxplus.cern.ch:${destination_folder}
