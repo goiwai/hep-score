@@ -39,10 +39,10 @@ def list_of_images(data, architecture=None):
 
     # Generate a hash for the local images list
     hash_object = hashlib.md5()
-    print(str(set(local_images_list)))
-    print(str(set(local_images_list)).encode())
     hash_object.update(str(set(local_images_list)).encode())
     images_list_hash = hash_object.hexdigest()
+
+    print(f"Hash of local images list: {images_list_hash}")
 
     return local_images_list, images_list_hash
 
@@ -71,8 +71,8 @@ def create_output_directory(directory):
         print(f"Error: Directory '{directory}' is not empty.")
         sys.exit(1)
 
-def create_tar_archive(workdir, output_archive):
-    subprocess.run(["tar", "-czf", f"{output_archive}.tar.gz", "-C", workdir, "."], check=True)
+def create_tar_archive(folder_to_archive, output_archive_file):
+    subprocess.run(["tar", "-czf", f"{output_archive_file}", "-C", folder_to_archive, "."], check=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download images")
@@ -83,10 +83,15 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--remote_archive_content", default=None, help="URL to remote archive content (JSON)")
     args = parser.parse_args()
 
-    create_output_directory(args.workdir)
 
     data = parse_yaml_file(args.input_config)
     local_images_list, local_images_hash = list_of_images(data, args.architecture)
+    
+    archive_folder=os.path.join(args.workdir,local_images_hash)
+    create_output_directory(archive_folder)
+
+    output_archive_file=archive_folder+".tar.gz"
+    output_archive_images=os.path.join(args.workdir,f"{local_images_hash}.json")
 
     must_download=False
     if args.remote_archive_content is not None:
@@ -100,10 +105,10 @@ if __name__ == "__main__":
         must_download=True
     
     if must_download:
-        download_images(local_images_list, args.workdir)
-        create_tar_archive(args.workdir, args.output_archive)
-        with open(f"{local_images_hash}.json", 'w') as f:
+        download_images(local_images_list, archive_folder)
+        create_tar_archive(archive_folder, output_archive_file)
+        with open(output_archive_images, 'w') as f:
             json.dump(local_images_list, f)
 
-    print(f"Images downloaded successfully in archive {args.output_archive}.tar.gz" )
-    print(f"List of images in {local_images_hash}.json")
+    print(f"Images downloaded successfully in archive {output_archive_file}" )
+    print(f"List of images in {output_archive_images}")
