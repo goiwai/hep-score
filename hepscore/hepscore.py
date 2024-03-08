@@ -997,8 +997,12 @@ class HEPscore():
         impl,ver = self.get_version()
         exec_ver = impl + "_version"
 
-        self.confobj['environment'] = {'system': sysname, 'arch': sysinfo.machine,
-                                       'start_at': curtime, exec_ver: ver}
+        self.confobj['environment'] = {'system': sysname, 
+                                       'arch': sysinfo.machine,
+                                       'start_at': curtime, 
+                                       exec_ver: ver,
+                                       'available_cores': len(os.sched_getaffinity(0)), # (BMK-1407)  
+                                        }
 
         logger.info("%s Benchmark", self.confobj['settings']['name'])
         logger.info("Config Hash:         %s", self.confobj['app_info']['config_hash'])
