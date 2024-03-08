@@ -27,7 +27,7 @@ elif [ "$STATUS" == "0" ]; then
     echo $archive_file
     SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
     ${workdir}/*.tar.gz ${workdir}/*.json ${workdir}/*_sha256sum.txt cpubmk@lxplus.cern.ch:${destination_folder}
-    curl -o retrieved_file ${remote_archive}/${archive_file}
+    #curl -o retrieved_file ${remote_archive}/${archive_file}
     # - cmp retrieved_file ${archive_file}
 else
     echo "There was a problem"
@@ -35,5 +35,5 @@ else
 fi
 
 echo "creating links"
-SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
-    cpubmk@lxplus.cern.ch "[ ! -e ${destination_folder}/../${HSVERSION} ] && mkdir ${destination_folder}/../${HSVERSION} && ln -t ${destination_folder}/../${HSVERSION} ${destination_folder}/${JSONFile}" 
+SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
+    cpubmk@lxplus.cern.ch "[ ! -e ${destination_folder}/../${HSVERSION} ] && mkdir ${destination_folder}/../${HSVERSION} && ln -s ${destination_folder}/${JSONFile} ${destination_folder}/../${HSVERSION}/${JSONFile}" 
