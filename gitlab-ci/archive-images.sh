@@ -1,9 +1,13 @@
 #!/bin/bash 
 
 cd $CI_PROJECT_DIR
+
+echo -e "\n---------------\nInstalling packages\n---------------\n"
 yum install -y python3-pip sshpass
 python3 -m pip install --upgrade pip 
 pip3 install .
+
+echo -e "\n---------------\nExecuting archive_images.py\n---------------\n"
 python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
 STATUS=$?
 ls -Rltrh ${workdir}
