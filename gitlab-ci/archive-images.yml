@@ -16,7 +16,7 @@ archive_images:
     - chmod u+x $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
     - $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
   after_script:
-    - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
+    - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID/*json /tmp/HEPSCORE/$CI_JOB_ID/*txt 
   artifacts:
       paths:
         - archive_images.tgz
