@@ -7,6 +7,9 @@ pip3 install .
 python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
 STATUS=$?
 ls -Rltrh ${workdir}
+hepscore --version
+HSVERSION=$(hepscore --version | awk '{print $2}')
+echo "HEPScore version $HSVERSION"
 if [ "$STATUS" == "111" ]; then
     echo "The archive already exists for the ${default_config} images"
 elif [ "$STATUS" == "0" ]; then
