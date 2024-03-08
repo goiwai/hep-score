@@ -60,8 +60,8 @@ def download_and_validate_remote_images(remote_archive_url, local_hash):
     if response.status_code == 200:
         return json.loads(response.text)
     else:
-        print(f"Error: Failed to download remote archive from {remote_archive_url}")
-        sys.exit(1)
+        print(f"Warning: Failed to download remote archive from {remote_archive_url}")
+        return {}  #returning an empty dictionary
 
 def create_output_directory(directory):
     if not os.path.exists(directory):
