@@ -113,7 +113,7 @@ if __name__ == "__main__":
             must_download=True
         else:
             print("Local and remote images are identical. No need to download.")
-            sys.exit(0)
+            sys.exit(111)
     else:
         must_download=True
     

@@ -13,20 +13,7 @@ archive_images:
     remote_archive: https://hep-benchmarks.web.cern.ch/hep-score/images/archives/
     destination_folder: ${CI_EOS_RELEASES}/../images/archives
   script:
-    - cd $CI_PROJECT_DIR
-    - yum install -y python3-pip sshpass
-    - python3 -m pip install --upgrade pip 
-    - pip3 install .
-    - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
-    - ls -Rltrh ${workdir}
-    - cat ${workdir}/*.json ; echo -e "\n"
-    - cat ${workdir}/*_sha256sum.txt ; echo -e "\n"
-    - archive_file=`ls ${workdir}/*tar.gz`
-    - echo $archive_file
-    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no ${workdir}/*.tar.gz ${workdir}/*.json ${workdir}/*_sha256sum.txt cpubmk@lxplus.cern.ch:${destination_folder}
-    - curl -o retrieved_file ${remote_archive}/${archive_file}
-   # - cmp retrieved_file ${archive_file}
-
+    - source $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
   artifacts:
