@@ -13,7 +13,8 @@ elif [ "$STATUS" == "0" ]; then
 
     archive_file=`ls ${workdir}/*tar.gz`
     echo $archive_file
-    SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no ${workdir}/*.tar.gz ${workdir}/*.json ${workdir}/*_sha256sum.txt cpubmk@lxplus.cern.ch:${destination_folder}
+    SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
+    ${workdir}/*.tar.gz ${workdir}/*.json ${workdir}/*_sha256sum.txt cpubmk@lxplus.cern.ch:${destination_folder}
     curl -o retrieved_file ${remote_archive}/${archive_file}
     # - cmp retrieved_file ${archive_file}
 else
