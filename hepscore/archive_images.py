@@ -6,7 +6,6 @@ import os
 import sys
 import hashlib
 import urllib.request
-import hepscore
 
 def parse_yaml_file(input_config):
     with open(input_config, 'r') as file:
