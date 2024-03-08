@@ -2,10 +2,10 @@ import argparse
 import subprocess
 import yaml
 import json
-import requests
 import os
 import sys
 import hashlib
+import urllib.request
 
 def parse_yaml_file(input_config):
     with open(input_config, 'r') as file:
@@ -56,13 +56,18 @@ def download_and_validate_remote_images(remote_archive_url, local_hash):
     remote_archive_url = remote_archive_url.rstrip('/')  # Remove trailing slashes if any
     remote_archive_url = f"{remote_archive_url}/{local_hash}"
 
-    response = requests.get(remote_archive_url)
-    if response.status_code == 200:
-        return json.loads(response.text)
-    else:
-        print(f"Warning: Failed to download remote archive from {remote_archive_url}")
-        return {}  #returning an empty dictionary
-
+    try:
+        with urllib.request.urlopen(remote_archive_url) as response:
+            data = response.read().decode('utf-8')
+            if response.status == 200:
+                return json.loads(data)
+            else:
+                print(f"Warning: Failed to download remote archive from {remote_archive_url}")
+                return {}  # Return an empty dictionary
+    except urllib.error.URLError as e:
+        print(f"Error: {e}")
+        return {}  # Return an empty dictionary
+    
 def create_output_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
