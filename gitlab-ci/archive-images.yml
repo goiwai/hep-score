@@ -12,7 +12,7 @@ archive_images:
   script:
     - cd $CI_PROJECT_DIR
     - pip install .
-    - python hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${architecture} -r ${remote_archive}
+    - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${architecture} -r ${remote_archive}
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
   artifacts:
