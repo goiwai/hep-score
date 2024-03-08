@@ -65,7 +65,7 @@ def download_and_validate_remote_images(remote_archive_url, local_hash):
                 print(f"Warning: Failed to download remote archive from {remote_archive_url}")
                 return {}  # Return an empty dictionary
     except urllib.error.URLError as e:
-        print(f"Error: {e}")
+        print(f"Warning: Failed to download remote archive from {remote_archive_url}. Error {e}")
         return {}  # Return an empty dictionary
     
 def create_output_directory(directory):
