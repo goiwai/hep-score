@@ -130,7 +130,5 @@ if __name__ == "__main__":
         print("Local and remote images are identical. No need to download.")
     #    sys.exit(111)
 
-    hepscore_version=hepscore.__version__
-
     print("SSHPASS=\${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive " + 
           f"{output_archive_file} {output_archive_images} {output_archive_sha256sum}" + "cpubmk@lxplus.cern.ch:\${destination_folder}")
