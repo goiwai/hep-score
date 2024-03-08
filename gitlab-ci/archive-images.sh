@@ -14,7 +14,7 @@ ls -Rltrh ${workdir}
 HSVERSION=$(hepscore --version | awk '{print $2}')
 echo "HEPScore version: $HSVERSION"
 echo "Images in config file ${default_config} :"
-JSONFile=$(find $workdir -name "*.json")
+JSONFile=$(find $workdir -name "*.json" -exec basename {} \;)
 cat ${JSONFile} ; echo -e "\n"
 
 if [ "$STATUS" == "111" ]; then
