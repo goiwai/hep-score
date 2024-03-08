@@ -127,7 +127,7 @@ if __name__ == "__main__":
             f.write(generate_sha256sum(output_archive_file))
     else:
         print("Local and remote images are identical. No need to download.")
-    #    sys.exit(111)
+        sys.exit(111)
 
     with open("scp_command.sh", "w") as f:
         f.write("SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive " +
