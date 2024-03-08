@@ -17,6 +17,7 @@ archive_images:
     - python3 -m pip install --upgrade pip 
     - pip3 install .
     - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
+    - ls -ltr ${workdir}/*
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
   artifacts:
@@ -27,8 +28,4 @@ archive_images:
   parallel:
     matrix:
       - ARCH: [x86_64, aarch64]
-hw-sing-aarch64:
-  tags:
-    - k8s-arm
-  extends: hw-sing-x86
 
