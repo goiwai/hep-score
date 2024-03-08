@@ -11,13 +11,15 @@ echo -e "\n---------------\nExecuting archive_images.py\n---------------\n"
 python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
 STATUS=$?
 ls -Rltrh ${workdir}
-hepscore --version
 HSVERSION=$(hepscore --version | awk '{print $2}')
-echo "HEPScore version $HSVERSION"
+echo "HEPScore version: $HSVERSION"
+echo "Images in config file ${default_config} :"
+JSONFile=$(find $workdir -name "*.json")
+cat ${JSONFile} ; echo -e "\n"
+
 if [ "$STATUS" == "111" ]; then
     echo "The archive already exists for the ${default_config} images"
 elif [ "$STATUS" == "0" ]; then
-    cat ${workdir}/*.json ; echo -e "\n"
     cat ${workdir}/*_sha256sum.txt ; echo -e "\n"
 
     archive_file=`ls ${workdir}/*tar.gz`
@@ -31,3 +33,6 @@ else
     exit -1
 fi
 
+echo "creating links"
+SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
+    cpubmk@lxplus.cern.ch "mkdir ${destination_folder}/../${HSVERSION}; ln ${destination_folder}/${JSONFile} ${destination_folder}/../${HSVERSION}" 
