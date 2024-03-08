@@ -62,10 +62,10 @@ def download_and_validate_remote_images(remote_archive_url, local_hash):
             if response.status == 200:
                 return json.loads(data)
             else:
-                print(f"Warning: Failed to download remote archive from {remote_archive_url}.\nAssuming this archive is not available remotely. Continuing the archive process.")
+                print(f"Warning: \n\tFailed to download remote archive from {remote_archive_url}.\n\tAssuming this archive is not available remotely. Continuing the archive process.")
                 return {}  # Return an empty dictionary
     except urllib.error.URLError as e:
-        print(f"Warning: Failed to download remote archive from {remote_archive_url}. Error {e}.\nAssuming this archive is not available remotely. Continuing the archive process.")
+        print(f"Warning: \n\tFailed to download remote archive from {remote_archive_url}. Error {e}.\n\tAssuming this archive is not available remotely. Continuing the archive process.")
         return {}  # Return an empty dictionary
     
 def create_output_directory(directory):
@@ -78,6 +78,13 @@ def create_output_directory(directory):
 
 def create_tar_archive(folder_to_archive, output_archive_file):
     subprocess.run(["tar", "-czf", f"{output_archive_file}", "-C", folder_to_archive, "."], check=True)
+
+def generate_sha256sum(file_path):
+    hash_sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_sha256.update(chunk)
+    return hash_sha256.hexdigest()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download images")
@@ -96,6 +103,7 @@ if __name__ == "__main__":
 
     output_archive_file=archive_folder+".tar.gz"
     output_archive_images=os.path.join(args.workdir,f"{local_images_hash}.json")
+    output_archive_sha256sum=os.path.join(args.workdir, f"{local_images_hash}_sha256sum.txt")
 
     must_download=False
     if args.remote_archive_content is not None:
@@ -113,6 +121,8 @@ if __name__ == "__main__":
         create_tar_archive(archive_folder, output_archive_file)
         with open(output_archive_images, 'w') as f:
             json.dump(local_images_list, f)
+        with open(output_archive_sha256sum, "w") as f:
+            f.write(output_archive_sha256sum(output_archive_file))
 
     print(f"Images downloaded successfully in archive {output_archive_file}" )
     print(f"List of images in {output_archive_images}")
