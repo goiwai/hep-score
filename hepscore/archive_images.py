@@ -6,6 +6,7 @@ import os
 import sys
 import hashlib
 import urllib.request
+import hepscore
 
 def parse_yaml_file(input_config):
     with open(input_config, 'r') as file:
@@ -116,7 +117,8 @@ if __name__ == "__main__":
     
     with open(output_archive_images, 'w') as f:
             json.dump(local_images_list, f)
-    print(f"List of images in {output_archive_images}")
+    print(f"List of images saved in {output_archive_images}")
+    print(f"{local_images_list}")
 
     if must_download:
         download_images(local_images_list, archive_folder)
@@ -126,6 +128,9 @@ if __name__ == "__main__":
             f.write(generate_sha256sum(output_archive_file))
     else:
         print("Local and remote images are identical. No need to download.")
-        sys.exit(111)
+    #    sys.exit(111)
 
+    hepscore_version=hepscore.__version__
 
+    print("SSHPASS=\${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive " + 
+          f"{output_archive_file} {output_archive_images} {output_archive_sha256sum}" + "cpubmk@lxplus.cern.ch:\${destination_folder}")

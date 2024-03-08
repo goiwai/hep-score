@@ -10,9 +10,12 @@ pip3 install .
 echo -e "\n---------------\nExecuting archive_images.py\n---------------\n"
 python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
 STATUS=$?
+
 ls -Rltrh ${workdir}
+
 HSVERSION=$(hepscore --version | awk '{print $2}')
 echo "HEPScore version: $HSVERSION"
+
 echo "Images in config file ${default_config} :"
 JSONFile=$(find $workdir -name "*.json" -exec basename {} \;)
 echo "JSONFile= $JSONFile"
@@ -35,5 +38,5 @@ else
 fi
 
 echo "creating links"
-SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
+SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
     cpubmk@lxplus.cern.ch "[ ! -e ${destination_folder}/../${HSVERSION} ] && mkdir ${destination_folder}/../${HSVERSION} && ln -s ${destination_folder}/${JSONFile} ${destination_folder}/../${HSVERSION}/${JSONFile}" 
