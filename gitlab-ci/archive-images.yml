@@ -11,6 +11,7 @@ archive_images:
     default_config: ${CI_PROJECT_DIR}/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
     workdir: /tmp/HEPSCORE/$CI_JOB_ID
     remote_archive: ${CI_WEB_RELEASES}/../images/archives
+    destination_folder: ${CI_EOS_RELEASES}/../images/archives
   script:
     - cd $CI_PROJECT_DIR
     - yum install -y python3-pip 
@@ -18,6 +19,14 @@ archive_images:
     - pip3 install .
     - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
     - ls -ltr ${workdir}/*
+    - cat ${workdir}/*.json
+    - cat ${workdir}/*_sha256sum.txt
+    - archive_file=`ls ${workdir}/*tar.gz`
+    - echo $archive_file
+    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no ${workdir}/*.tar.gz ${workdir}/*.json ${workdir}/*_sha256sum.txt cpubmk@lxplus.cern.ch:${destination_folder}
+    - curl -o retrieved_file ${remote_archive}/${archive_file}
+    - cmp retrieved_file ${archive_file}
+
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
   artifacts:

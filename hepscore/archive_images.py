@@ -62,10 +62,10 @@ def download_and_validate_remote_images(remote_archive_url, local_hash):
             if response.status == 200:
                 return json.loads(data)
             else:
-                print(f"Warning: \n\tFailed to download remote archive from {remote_archive_url}.\n\tAssuming this archive is not available remotely. Continuing the archive process.")
+                print(f"Warning: \n\tFailed to download remote archive from {remote_archive_url}.\n\tAssuming this archive is not available remotely.\n\tContinuing the archive process.")
                 return {}  # Return an empty dictionary
     except urllib.error.URLError as e:
-        print(f"Warning: \n\tFailed to download remote archive from {remote_archive_url}. Error {e}.\n\tAssuming this archive is not available remotely. Continuing the archive process.")
+        print(f"Warning: \n\tFailed to download remote archive from {remote_archive_url}.\n\tError {e}.\n\tAssuming this archive is not available remotely.\n\tContinuing the archive process.")
         return {}  # Return an empty dictionary
     
 def create_output_directory(directory):
