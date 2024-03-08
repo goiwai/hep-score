@@ -122,7 +122,7 @@ if __name__ == "__main__":
         with open(output_archive_images, 'w') as f:
             json.dump(local_images_list, f)
         with open(output_archive_sha256sum, "w") as f:
-            f.write(output_archive_sha256sum(output_archive_file))
+            f.write(generate_sha256sum(output_archive_file))
 
     print(f"Images downloaded successfully in archive {output_archive_file}" )
     print(f"List of images in {output_archive_images}")
