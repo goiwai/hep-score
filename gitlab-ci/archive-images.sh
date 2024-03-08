@@ -15,7 +15,8 @@ HSVERSION=$(hepscore --version | awk '{print $2}')
 echo "HEPScore version: $HSVERSION"
 echo "Images in config file ${default_config} :"
 JSONFile=$(find $workdir -name "*.json" -exec basename {} \;)
-cat ${JSONFile} ; echo -e "\n"
+echo "JSONFile= $JSONFile"
+cat ${workdir}/${JSONFile} ; echo -e "\n"
 
 if [ "$STATUS" == "111" ]; then
     echo "The archive already exists for the ${default_config} images"
@@ -35,4 +36,4 @@ fi
 
 echo "creating links"
 SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive \
-    cpubmk@lxplus.cern.ch "mkdir ${destination_folder}/../${HSVERSION}; ln ${destination_folder}/${JSONFile} ${destination_folder}/../${HSVERSION}" 
+    cpubmk@lxplus.cern.ch "[ ! -e ${destination_folder}/../${HSVERSION} ] && mkdir ${destination_folder}/../${HSVERSION} && ln -t ${destination_folder}/../${HSVERSION} ${destination_folder}/${JSONFile}" 
