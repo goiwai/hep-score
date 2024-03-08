@@ -75,10 +75,10 @@ def create_tar_archive(output_archive):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download images")
-    parser.add_argument("input_config", help="Path to input YAML configuration file")
-    parser.add_argument("output_archive", nargs="?", default="hep-workloads-sif", help="Path to output archive (JSON)")
-    parser.add_argument("--architecture", help="Architecture type (e.g., x86_64, aarch64)")
-    parser.add_argument("--remote_archive_content", default=None, help="URL to remote archive content (JSON)")
+    parser.add_argument("-i", "--input_config", required=True, help="Path to input YAML configuration file")
+    parser.add_argument("-o", "--output_archive", default="hep-workloads-sif", help="Path to output archive (JSON)")
+    parser.add_argument("-a", "--architecture", help="Architecture type (e.g., x86_64, aarch64)")
+    parser.add_argument("-r", "--remote_archive_content", default=None, help="URL to remote archive content (JSON)")
     args = parser.parse_args()
 
     create_output_directory(args.output_archive)
