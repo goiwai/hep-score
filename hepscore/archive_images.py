@@ -119,16 +119,6 @@ if __name__ == "__main__":
     print(f"List of images saved in {output_archive_images}")
     print(f"{local_images_list}")
 
-    if must_download:
-        download_images(local_images_list, archive_folder)
-        create_tar_archive(archive_folder, output_archive_file)
-        print(f"Images downloaded successfully in archive {output_archive_file}" )
-        with open(output_archive_sha256sum, "w") as f:
-            f.write(generate_sha256sum(output_archive_file))
-    else:
-        print("Local and remote images are identical. No need to download.")
-        sys.exit(111)
-
     with open("scp_command.sh", "w") as f:
         f.write("SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -oPreferredAuthentications=keyboard-interactive " +
                 f"{output_archive_file} {output_archive_images} {output_archive_sha256sum} cpubmk@lxplus.cern.ch:${{destination_folder}}\n")
@@ -139,3 +129,12 @@ if __name__ == "__main__":
                 '"link_folder=${destination_folder}/../${HSVERSION}; [ ! -e \${link_folder} ] && mkdir \${link_folder}; ' +
                 f'[ ! -e \${{link_folder}}/{key_name}{extension} ] && ln -s ${{destination_folder}}/{key_name}{extension} \${{link_folder}}/{key_name}{extension}" \n'
             )
+    if must_download:
+        download_images(local_images_list, archive_folder)
+        create_tar_archive(archive_folder, output_archive_file)
+        print(f"Images downloaded successfully in archive {output_archive_file}" )
+        with open(output_archive_sha256sum, "w") as f:
+            f.write(generate_sha256sum(output_archive_file))
+    else:
+        print("Local and remote images are identical. No need to download.")
+        sys.exit(111)
