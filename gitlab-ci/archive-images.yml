@@ -13,7 +13,8 @@ archive_images:
     remote_archive: https://hep-benchmarks.web.cern.ch/hep-score/images/archives/
     destination_folder: ${CI_EOS_RELEASES}/../images/archives
   script:
-    - source $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
+    - chmod u+x $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
+    - $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
   after_script:
     - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID
   artifacts:

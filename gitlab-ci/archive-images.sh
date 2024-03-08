@@ -1,3 +1,5 @@
+#!/bin/bash 
+
 cd $CI_PROJECT_DIR
 yum install -y python3-pip sshpass
 python3 -m pip install --upgrade pip 
