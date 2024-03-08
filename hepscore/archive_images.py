@@ -98,16 +98,17 @@ if __name__ == "__main__":
     data = parse_yaml_file(args.input_config)
     local_images_list, local_images_hash = list_of_images(data, args.architecture)
     
-    archive_folder=os.path.join(args.workdir,f"{args.architecture}_{local_images_hash}")
+    key_name=f"{args.architecture}_{local_images_hash}"
+    archive_folder=os.path.join(args.workdir,key_name)
     create_output_directory(archive_folder)
 
     output_archive_file=f"{archive_folder}.tar.gz"
-    output_archive_images=os.path.join(args.workdir,f"{args.architecture}_{local_images_hash}.json")
-    output_archive_sha256sum=os.path.join(args.workdir, f"{args.architecture}_{local_images_hash}_sha256sum.txt")
+    output_archive_images=os.path.join(args.workdir,f"{key_name}.json")
+    output_archive_sha256sum=os.path.join(args.workdir, f"{key_name}_sha256sum.txt")
 
     must_download=False
     if args.remote_archive_content is not None:
-        remote_images_list = download_and_validate_remote_images(args.remote_archive_content, local_images_hash)
+        remote_images_list = download_and_validate_remote_images(args.remote_archive_content, f"{key_name}.json")
         if set(local_images_list) != set(remote_images_list):
             must_download=True
         else:
