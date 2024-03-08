@@ -1,4 +1,5 @@
 stages:
+  - archive-images
   - build-testing-image
   - unit-test
   - execution-test

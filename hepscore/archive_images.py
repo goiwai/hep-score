@@ -21,15 +21,16 @@ def list_of_images(data, architecture=None):
             settings = data[key]['settings']
             break
 
+    registry = ""
+    for r in settings['registry']:
+        if r.startswith("oras://"):
+            registry = r
+            break
+
     for key in benchmarks.keys():
-        if benchmark_type.startswith('.'):
+        if key.startswith('.'):
             continue
         version = benchmarks[key]['version']
-        registry = ""
-        for r in settings['registry']:
-            if r.startswith("oras://"):
-                registry = r
-                break
 
         if architecture is not None:
             local_images_list.append(f"{registry}/{key}:{version}_{architecture}")
@@ -47,7 +48,7 @@ def list_of_images(data, architecture=None):
 
 def download_images(images_list, directory):
     for image in images_list:
-        subprocess.run(["apptainer", "pull", "--dir", directory, image], check=True)
+        subprocess.run(["singularity", "pull", "--dir", directory, image], check=True)
         subprocess.run(["mv", directory+"/"+image.split('/')[-1].replace(":","_")+".sif", directory+"/"+image.split('/')[-1]], check=True)
 
 
@@ -70,18 +71,19 @@ def create_output_directory(directory):
         print(f"Error: Directory '{directory}' is not empty.")
         sys.exit(1)
 
-def create_tar_archive(output_archive):
-    subprocess.run(["tar", "-czf", f"{output_archive}.tar.gz", "-C", output_archive, "."], check=True)
+def create_tar_archive(workdir, output_archive):
+    subprocess.run(["tar", "-czf", f"{output_archive}.tar.gz", "-C", workdir, "."], check=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download images")
     parser.add_argument("-i", "--input_config", required=True, help="Path to input YAML configuration file")
+    parser.add_argument("-w", "--workdir", default="hep-workloads-sif", help="Working directory to store intermediate files")
     parser.add_argument("-o", "--output_archive", default="hep-workloads-sif", help="Path to output archive (JSON)")
     parser.add_argument("-a", "--architecture", help="Architecture type (e.g., x86_64, aarch64)")
     parser.add_argument("-r", "--remote_archive_content", default=None, help="URL to remote archive content (JSON)")
     args = parser.parse_args()
 
-    create_output_directory(args.output_archive)
+    create_output_directory(args.workdir)
 
     data = parse_yaml_file(args.input_config)
     local_images_list, local_images_hash = list_of_images(data, args.architecture)
@@ -98,8 +100,8 @@ if __name__ == "__main__":
         must_download=True
     
     if must_download:
-        download_images(local_images_list, args.output_archive)
-        create_tar_archive(args.output_archive)
+        download_images(local_images_list, args.workdir)
+        create_tar_archive(args.workdir, args.output_archive)
         with open(f"{local_images_hash}.json", 'w') as f:
             json.dump(local_images_list, f)
 
