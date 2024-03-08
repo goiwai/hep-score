@@ -14,7 +14,7 @@ archive_images:
     destination_folder: ${CI_EOS_RELEASES}/../images/archives
   script:
     - cd $CI_PROJECT_DIR
-    - yum install -y python3-pip 
+    - yum install -y python3-pip sshpass
     - python3 -m pip install --upgrade pip 
     - pip3 install .
     - python3 hepscore/archive_images.py -i ${default_config} -w ${workdir} -a ${ARCH} -r ${remote_archive}
