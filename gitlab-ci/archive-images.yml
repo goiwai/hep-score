@@ -10,7 +10,7 @@ archive_images:
   variables: 
     default_config: ${CI_PROJECT_DIR}/hepscore/tests/etc/hepscore_conf_ci_helloworld.yaml
     workdir: /tmp/HEPSCORE/$CI_JOB_ID
-    remote_archive: ${CI_WEB_RELEASES}/../images/archives
+    remote_archive: https://hep-benchmarks.web.cern.ch/hep-score/images/archives/
     destination_folder: ${CI_EOS_RELEASES}/../images/archives
   script:
     - cd $CI_PROJECT_DIR
