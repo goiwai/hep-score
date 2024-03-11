@@ -1,0 +1,35 @@
+hepscore:
+  settings:
+    name: HEPscoreCI
+    reference_machine: 'Unknown'
+    registry:
+      - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+      - docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+      - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+    addarch: true
+    scaling: 10
+    repetitions: 2  #number of repetitions of the same benchmark
+    method: geometric_mean #or any other algorithm
+    container_exec: singularity
+    ncores: 6
+  benchmarks:
+    hello-world-c7-ma-bmk:
+      results_file: hello-world-c7-ma_summary.json
+      version: v1.0
+      ref_scores:
+        gen: 1
+      args:
+        debug: true
+        mop: none
+    hello-world-cs8-ma-bmk:
+      results_file: hello-world-cs8-ma_summary.json
+      version: ci-v1.0
+      ref_scores:
+        gen: 1
+      args:
+        debug: true
+        mop: none
+  options:
+    container_uri: oras
+    
+

@@ -103,6 +103,17 @@ To install as a regular user (suggested):
 ```$ pip install --user git+https://gitlab.cern.ch/hep-benchmarks/hep-score.git```  
 The ```hep-score``` script will then be accessible under ```~/.local/bin```.  
 
+To install as regular user in a python virtual environment:
+
+```
+export VERSION=v2.0           # Or any other version of HEPScore
+export MYENV="bmk_env"        # Define the name of the environment.
+python3 -m venv $MYENV        # Create a directory with the virtual environment.
+source $MYENV/bin/activate    # Activate the environment.
+python3 -m pip install git+https://gitlab.cern.ch/hep-benchmarks/hep-score.git@$VERSION
+```
+
+
 If you have administrator rights on your system and would like to install
 hep-score and all dependencies in system Python/bin paths:  
 ```# pip install git+https://gitlab.cern.ch/hep-benchmarks/hep-score.git```
@@ -130,11 +141,21 @@ These wheels can be used to install HEPScore via pip on hosts without
 network connectivity.  To install, after downloading and untarring a
 release tarfile, execute ```pip install --user hepscore_wheels/*.whl```.
 
-x86_64 and aarch64 tarfiles containing all of the workloads used in HEPScore23
-are available here: <https://hep-benchmarks.web.cern.ch/hep-score/workloads>.
-After untaring, the local workloads can be used with hep-score by passing the
+You can access the x86_64 and aarch64 tarfiles containing all of the workloads used in the
+default HEPScore configuration
+for each HEPScore released version.
+These archives are available aat <https://hep-benchmarks.web.cern.ch/hep-score/images> .
+
+Each folder in the archive repository contains the following three files:
+- **Tar Archive**: Contains all the workload images.
+- **JSON List**: A JSON file listing the included workload images.
+- **SHA256sum Text File**: Text file containing the SHA256 hash of the tar archive.
+
+The naming convention for folders and files follows the pattern `<arch>_<hash>`, where `<arch>` represents the specific architecture (either aarch64 or x86_64), and `<hash>` is a unique identifier for the list of images available in that archive.
+
+After having downloaded and untar the tar archive, the local workloads can be used with hep-score by passing the
 directory with the ```-R``` or ```--registry``` options, i.e.:
-```hep-score --registry dir:///PATH/TO/UNTARRED/WORKLOADS/hs23-workloads /tmp```
+```hep-score --registry dir:///PATH_TO_UNTARRED_WORKLOADS/ /tmp```
 
 ### Dependencies
 
