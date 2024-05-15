@@ -64,7 +64,7 @@ hepscore:
         threads: 4
         events: 10
   settings:
-    name: HEPScore23
+    name: HEPScore23_ncores
     reference_machine: "E423521X1B04810-B Gold 6326 CPU @ 2.90GHz - 64 cores SMT ON"
     registry:
       - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
