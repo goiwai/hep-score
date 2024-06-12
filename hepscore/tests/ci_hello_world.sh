@@ -155,6 +155,7 @@ pretty_print "Resumed table:
 @settings_ncores=${settings_ncores}
 @settings_container_exec=${settings_container_exec}
 @settings_container_uri=${settings_container_uri}
+@score=${score}
 "
 
 if [[ \
