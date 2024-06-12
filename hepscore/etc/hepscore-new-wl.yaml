@@ -59,7 +59,7 @@ hepscore:
       ref_scores:
         digi-reco: 0.330
       weight: 1.0
-      version: ci-v3.0
+      version: v3.0
       args:
         threads: 4
         events: 3
