@@ -151,6 +151,10 @@ pretty_print "Resumed table:
 @INPUT_NCORES=${INPUT_NCORES}
 @NCORES=${NCORES}
 @HASH=${config_hash}
+@validate_score=${validate_score}
+@settings_ncores=${settings_ncores}
+@settings_container_exec=${settings_container_exec}
+@settings_container_uri=${settings_container_uri}
 "
 
 if [[ \
