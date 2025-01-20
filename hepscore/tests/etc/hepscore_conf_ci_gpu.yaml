@@ -8,19 +8,19 @@ hepscore:
       - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
     addarch: true
     scaling: 10
-    repetitions: 2  #number of repetitions of the same benchmark
+    repetitions: 1  #number of repetitions of the same benchmark
     method: geometric_mean #or any other algorithm
     container_exec: singularity
   options:
     container_uri: oras
   benchmarks:
-    belle2-gen-sim-reco-ma-bmk:
-      results_file: belle2-gen-sim-reco-ma_summary.json
+    cms-flowsim-bmk:
+      results_file: cms-flowsim_summary.json
+      gpu: true
       ref_scores:
-        gen-sim-reco: 15.4
-      weight: 1.0
-      version: v2.0
+        flowsim: 1
+      version: ci-v0.1
       args:
-        threads: 1
-        events: 5
-        debug: true
+        threads: 4
+        copies: 1
+        extra-args: '--device cuda --n-objects 40000 --batch-size 20000 --n-model-instances 1'

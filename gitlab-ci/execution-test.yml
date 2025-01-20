@@ -90,6 +90,7 @@ run_exp_wl:
   tags:
     - hep-benchmarks
     - x86_64
+    - gpu  # to test also GPU workloads
   stage: execution-test
   script:
     - yum -y install bats

@@ -24,6 +24,7 @@ import sys
 import time
 import yaml
 from hepscore import __version__
+import shlex
 
 logger = logging.getLogger(__name__)
 
@@ -629,20 +630,31 @@ class HEPscore():
         for option in bmark_keys:
             option_arg = str(bench_conf['args'][option])
 
-            if self.check_chars(option) is None or \
-                    option in bad_args or \
-                    self.check_chars(option_arg) is None:
+            if self.check_chars(option) is None:
+                logger.error("Ignoring invalid option in YAML configuration: %s %s",
+                                                          option, option_arg)
+                continue
+            if option in bad_args :
+                logger.error("Ignoring option in the list of bad_args in YAML configuration: %s %s",
+                                                          option, option_arg)
+                continue
+            if option != "extra-args" and self.check_chars(option_arg) is None:
                 logger.error("Ignoring invalid option in YAML configuration: %s %s",
                              option, option_arg)
                 continue
+            
             if option_arg not in ['None', 'False']:
                 if option[0] != '-':
                     options_string = options_string + ' ' + '--' + option
                 else:
                     options_string = options_string + ' ' + option
-                if option_arg != 'True':
-                    options_string = options_string + ' ' + option_arg
 
+                if option_arg != 'True': #no empty argument field
+                    if option == 'extra-args':
+                        options_string = options_string + f" \'{option_arg}\'" 
+                    else:
+                        options_string = options_string + ' ' + option_arg
+                                
         try:
             lfile = open(log, mode='a')
         except OSError:
@@ -685,8 +697,7 @@ class HEPscore():
                                        + self._get_usernamespace_flag() + gpu_flag}
 
             command_string = commands[self.cec] + benchmark_complete
-            command = command_string.split(' ')
-
+            command = shlex.split(command_string)
             runstr = 'run' + str(i)
 
             logger.info("Starting %s", runstr)
