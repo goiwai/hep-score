@@ -37,3 +37,17 @@ function run_bmk {
     echo -e "$output"
     [ "$status" -eq 0 ]
 }
+
+function run_bmk_gpu {
+	 export WDIR=/tmp/HEPSCORE/$CI_JOB_ID
+	 if [ ! -e $WDIR ]; then	
+   	    mkdir -p $WDIR
+	 fi
+	 hep-score -v -f $TESTDIR/etc/hepscore_conf_ci_gpu.yaml $WDIR
+}
+
+@test "Test run of hep-score with configuration hepscore_conf_ci_gpu.yaml" {
+    run run_bmk_gpu
+    echo -e "$output"
+    [ "$status" -eq 0 ]
+}
