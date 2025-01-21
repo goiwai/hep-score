@@ -11,12 +11,12 @@ build_wheels:
     - if: $CI_COMMIT_BRANCH == 'BMK-1575'
       variables:
         ID: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-        FULL_RELEASE_PATH: ~/dev/$ID
+        FULL_RELEASE_PATH: $CI_EOS_RELEASES/dev/$ID
   tags:
     - $ARCH
   before_script:
     - yum install -y git sshpass curl
-    #- echo -e "StrictHostKeyChecking no\nPreferredAuthentications keyboard-interactive" >> /etc/ssh/ssh_config
+    - echo -e "StrictHostKeyChecking no\nPreferredAuthentications keyboard-interactive" >> /etc/ssh/ssh_config
     - dnf install -y epel-release # To install python3.11 and above
     - dnf install -y -q $PYTHON_VERSION --setopt=install_weak_deps=True
     - if [ "${PYTHON_VERSION}" != "python36" ]; then dnf install -y -q ${PYTHON_VERSION}-pip; fi
