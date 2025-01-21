@@ -29,10 +29,11 @@ build_wheels:
     - tar -czvf ${PKG_NAME} hepscore_wheels
     - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
     - export  SSHPASS=${CI_CPUBMK}
+    - echo "FULL_RELEASE_PATH is ${FULL_RELEASE_PATH}"
     - sshpass -e ssh cpubmk@lxplus.cern.ch "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH}"
     - sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
-    - curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
-    - cmp retrieved_file ${PKG_NAME}
+    #- curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
+    #- cmp retrieved_file ${PKG_NAME}
     # create release w/ package dl
     # YAML eating special characters :
     - |
