@@ -147,8 +147,17 @@ def download_and_validate_remote_images(remote_archive_url, local_hash):
     remote_archive_url = remote_archive_url.rstrip('/')  # Remove trailing slashes if any
     remote_archive_url = f"{remote_archive_url}/{local_hash}/{local_hash}.json"
 
+    # Define the allowed schemes
+    allowed_schemes = ['http', 'https']
+
+    # Parse the URL and check if the scheme is allowed
+    parsed_url = urlparse(remote_archive_url)
+
+    if parsed_url.scheme not in allowed_schemes:
+        raise ValueError(f"Unsafe URL scheme detected: {parsed_url.scheme}. Only 'http' and 'https' are allowed.")
+
     try:
-        with urllib.request.urlopen(remote_archive_url) as response:
+        with urllib.request.urlopen(remote_archive_url) as response:  # nosec disable=B310
             data = response.read().decode('utf-8')
             if response.status == 200:
                 return json.loads(data)

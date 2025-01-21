@@ -1,8 +1,6 @@
-FROM cern/cc7-base:latest
+FROM gitlab-registry.cern.ch/linuxsupport/alma8-base
 RUN \
-    yum install -y git gcc openldap-devel krb5-devel mariadb-devel python2-pip python3-pip which && \
-    yum clean all --enablerepo='*' && \
-    for V in 2 3; do \
-        python$V -m pip install --upgrade pip wheel; \
-        python$V -m pip install tox coverage; \
-    done;
+    dnf install -y -q python3.11 python3-pip python39 python3.11-pip git ;\
+    python3.11 -m pip install -U pip tox ;\
+    python3.9 -m pip install -U pip tox ;\
+    python3.6 -m pip install -U pip tox
