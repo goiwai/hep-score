@@ -11,7 +11,7 @@ build_wheels:
     - if: $CI_COMMIT_BRANCH == 'BMK-1575'
       variables:
         ID: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-        FULL_RELEASE_PATH: ./dev/$ID
+        FULL_RELEASE_PATH: ~/dev/$ID
   tags:
     - $ARCH
   before_script:
