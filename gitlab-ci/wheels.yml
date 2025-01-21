@@ -53,7 +53,5 @@ build_wheels:
     when: always
   parallel:
     matrix:
-#      - ARCH: [x86_64, aarch64]
-#        PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
-      - ARCH: [x86_64]
-        PYTHON_VERSION: [python36]
+      - ARCH: [x86_64, aarch64]
+        PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
