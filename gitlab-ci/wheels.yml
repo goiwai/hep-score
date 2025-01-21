@@ -30,8 +30,7 @@ build_wheels:
     - tar -czvf ${PKG_NAME} hepscore_wheels
     - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
     - echo "FULL_RELEASE_PATH is ${FULL_RELEASE_PATH}"
-    - SSHPASS=${CI_CPUBMK} sshpass -v -e ssh cpubmk@lxplus.cern.ch -vv -oStrictHostKeyChecking=no "pwd"
-    #[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH}; cd ${FULL_RELEASE_PATH}"
+    - SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -v cpubmk@lxplus.cern.ch -vv -oStrictHostKeyChecking=no "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH};"
     - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
     #- curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
     #- cmp retrieved_file ${PKG_NAME}
