@@ -31,7 +31,8 @@ build_wheels:
     - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
     - export  SSHPASS=${CI_CPUBMK}
     - echo "FULL_RELEASE_PATH is ${FULL_RELEASE_PATH}"
-    - sshpass -v -e ssh cpubmk@lxplus.cern.ch -vv -oStrictHostKeyChecking=no "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH}; cd ${FULL_RELEASE_PATH}"
+    - sshpass -v -e ssh cpubmk@lxplus.cern.ch -vv -oStrictHostKeyChecking=no "pwd"
+    #[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH}; cd ${FULL_RELEASE_PATH}"
     - sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
     #- curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
     #- cmp retrieved_file ${PKG_NAME}
@@ -52,5 +53,7 @@ build_wheels:
     when: always
   parallel:
     matrix:
-      - ARCH: [x86_64, aarch64]
-        PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
+#      - ARCH: [x86_64, aarch64]
+#        PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
+      - ARCH: [x86_64]
+        PYTHON_VERSION: [python36]
