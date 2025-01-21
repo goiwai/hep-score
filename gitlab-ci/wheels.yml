@@ -14,16 +14,23 @@ build_wheels:
         FULL_RELEASE_PATH: $CI_EOS_RELEASES/dev/$ID
   tags:
     - $ARCH
+  before_script:
+    - yum install -y git sshpass curl
+    - echo -e "StrictHostKeyChecking no\nPreferredAuthentications keyboard-interactive" >> /etc/ssh/ssh_config
+    - dnf install -y epel-release # To install python3.11 and above
+    - dnf install -y -q $PYTHON_VERSION --setopt=install_weak_deps=True
+    - if [ "${PYTHON_VERSION}" != "python36" ]; then dnf install -y -q ${PYTHON_VERSION}-pip; fi
+    - python3 -m pip install --upgrade setuptools wheel pip
+
   script:
-    - yum install -y python3-pip sshpass coreutils curl diffutils
-    - python3 -m pip install --upgrade pip wheel
-    # build all wheels incl. hepscore, release will put into archive
+    #- yum install -y python3-pip sshpass coreutils curl diffutils
     - pip3 wheel -r requirements.txt --wheel-dir=hepscore_wheels .
-    - export PKG_NAME="hepscore-wheels-${CI_COMMIT_TAG}-${PYTHON_VERSION/thon}-${ARCH}.tar.gz"
+    - export PKG_NAME="hepscore-wheels-${ID}-${PYTHON_VERSION/thon}-${ARCH}.tar.gz"
     - tar -czvf ${PKG_NAME} hepscore_wheels
     - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
+    - export  SSHPASS=${CI_CPUBMK}
     - sshpass -e ssh cpubmk@lxplus.cern.ch "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH}"
-    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
+    - sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
     - curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
     - cmp retrieved_file ${PKG_NAME}
     # create release w/ package dl
