@@ -1,29 +1,45 @@
 build_wheels:
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-benchmark-suite/hep-benchmark-suite-cc7:qa-v2.1
+  image: gitlab-registry.cern.ch/linuxsupport/alma8-base
   stage: build-wheels
   rules:
     - if: $CI_COMMIT_TAG
+      variables:
+        ID: $CI_COMMIT_TAG
+        FULL_RELEASE_PATH: $CI_EOS_RELEASES/$ID
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      variables:
+        ID: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        FULL_RELEASE_PATH: $CI_EOS_RELEASES/dev/$ID
+  tags:
+    - $ARCH
   script:
     - yum install -y python3-pip sshpass coreutils curl diffutils
     - python3 -m pip install --upgrade pip wheel
     # build all wheels incl. hepscore, release will put into archive
     - pip3 wheel -r requirements.txt --wheel-dir=hepscore_wheels .
-    - export PKG_NAME="hepscore-wheels-${CI_COMMIT_TAG}.tar.gz"
+    - export PKG_NAME="hepscore-wheels-${CI_COMMIT_TAG}-${PYTHON_VERSION/thon}-${ARCH}.tar.gz"
     - tar -czvf ${PKG_NAME} hepscore_wheels
     - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
-    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${CI_EOS_RELEASES}
+    - sshpass -e ssh cpubmk@lxplus.cern.ch "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH}"
+    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
     - curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
     - cmp retrieved_file ${PKG_NAME}
     # create release w/ package dl
     # YAML eating special characters :
     - |
-      curl -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
-      --header "PRIVATE-TOKEN: ${CI_API_TOKEN}" \
-      --header "Content-Type: application/json" \
-      --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\", \"assets\": { \"links\": [{ \"name\": \"HEPscore python wheels (md5sum: ${PKG_HASH})\", \"url\": \"${CI_WEB_RELEASES}${PKG_NAME}\", \"link_type\":\"package\" }] }}" \
-      --fail --output "/dev/null" --silent --show-error --write-out "HTTP response: ${http_code:-OK}\n\n"
+      if [ "$CI_COMMIT_TAG" != "" ]; then
+        curl -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
+        --header "PRIVATE-TOKEN: ${CI_API_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\", \"assets\": { \"links\": [{ \"name\": \"HEPscore python wheels (md5sum: ${PKG_HASH})\", \"url\": \"${CI_WEB_RELEASES}${PKG_NAME}\", \"link_type\":\"package\" }] }}" \
+        --fail --output "/dev/null" --silent --show-error --write-out "HTTP response: ${http_code:-OK}\n\n"
+      fi
   artifacts:
     paths:
       - hepscore_wheels
       - hepscore-wheels-$CI_COMMIT_TAG.tar.gz
     when: always
+  parallel:
+    matrix:
+      - ARCH: [x86_64, aarch64]
+        PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
