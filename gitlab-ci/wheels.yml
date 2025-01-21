@@ -2,6 +2,7 @@ build_wheels:
   image: gitlab-registry.cern.ch/linuxsupport/alma8-base
   stage: build-wheels
   retry: 2
+  needs: []
   rules:
     - if: $CI_COMMIT_TAG
       variables:
