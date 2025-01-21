@@ -1,11 +1,12 @@
 
 pep8:
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
   dependencies: []
   rules:
     - if: $CI_COMMIT_TAG
       when: never
+    - if: $CI_COMMIT_BRANCH
   script:
     - mkdir -p public/badges public/lint
     - echo undefined > public/badges/$CI_JOB_NAME.score
@@ -23,12 +24,13 @@ pep8:
       codequality: codeclimate.json
     when: always
 
-python36:
+tox_tests:
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
   rules:
     - if: $CI_COMMIT_TAG
       when: never
+    - if: $CI_COMMIT_BRANCH
   script:
     - tox
   artifacts:
@@ -39,17 +41,18 @@ python36:
 
 security:
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
   rules:
     - if: $CI_COMMIT_TAG
       when: never
+    - if: $CI_COMMIT_BRANCH
   script:
     - tox -e bandit    
 
 test_python_support:
   # determine minimum supported python version
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
   script:
     - python3 -m pip install vermin
     - vermin -vv .

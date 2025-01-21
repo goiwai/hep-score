@@ -6,7 +6,7 @@
 build_image_tox:
   stage: build-testing-image
   image: # NB enable shared runners and do not specify a CI tag
-    name: gitlab-registry.cern.ch/ci-tools/docker-image-builder # CERN version of the Kaniko image
+    name: gcr.io/kaniko-project/executor:debug # use the debug version which has a shell (required for an image to be used with GitLab CI/CD)
     entrypoint: [""]
   only:
     changes:
@@ -19,4 +19,4 @@ build_image_tox:
     # Build and push the image from the Dockerfile at the root of the project.
     # To push to a specific docker tag, amend the --destination parameter, e.g. --destination $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
     # See https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#variables-reference for available variables
-    - /kaniko/executor --context $CI_PROJECT_DIR/docker-images/tox --dockerfile $CI_PROJECT_DIR/docker-images/tox/Dockerfile --destination $CI_REGISTRY_IMAGE/tox:latest
+    - /kaniko/executor --context $CI_PROJECT_DIR/docker-images/tox --dockerfile $CI_PROJECT_DIR/docker-images/tox/Dockerfile --destination $CI_REGISTRY_IMAGE/tox:$CI_COMMIT_SHORT_SHA --destination $CI_REGISTRY_IMAGE/tox:latest
