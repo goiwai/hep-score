@@ -10,7 +10,7 @@ build_wheels:
         FULL_RELEASE_PATH: $CI_EOS_RELEASES/$ID
     - if: $CI_COMMIT_BRANCH == 'BMK-1575'
       variables:
-        ID: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+        ID: $CI_COMMIT_BRANCH
         FULL_RELEASE_PATH: $CI_EOS_RELEASES/dev/$ID
   tags:
     - $ARCH
@@ -29,12 +29,10 @@ build_wheels:
     - echo "PKG_NAME is ${PKG_NAME}"
     - tar -czvf ${PKG_NAME} hepscore_wheels
     - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
-    - echo "FULL_RELEASE_PATH is ${FULL_RELEASE_PATH}"
-     - SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -oStrictHostKeyChecking=no cpubmk@lxplus.cern.ch "ls"
     - SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -oStrictHostKeyChecking=no cpubmk@lxplus.cern.ch "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH};"
-    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -v -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
-    #- curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
-    #- cmp retrieved_file ${PKG_NAME}
+    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
+    - curl -o retrieved_file ${CI_WEB_RELEASES}${PKG_NAME}
+    - cmp retrieved_file ${PKG_NAME}
     # create release w/ package dl
     # YAML eating special characters :
     - |
