@@ -15,7 +15,7 @@ build_wheels:
   tags:
     - $ARCH
   before_script:
-    - yum install -y git sshpass curl
+    - yum install -y git sshpass curl diffutils
     - echo -e "StrictHostKeyChecking no\nPreferredAuthentications keyboard-interactive" >> /etc/ssh/ssh_config
     - dnf install -y epel-release # To install python3.11 and above
     - dnf install -y -q $PYTHON_VERSION --setopt=install_weak_deps=True
