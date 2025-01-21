@@ -11,7 +11,7 @@ build_wheels:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       variables:
         ID: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-        FULL_RELEASE_PATH: $CI_EOS_RELEASES/dev/$ID
+        FULL_RELEASE_PATH: $CI_EOS_RELEASES/./dev/$ID
   tags:
     - $ARCH
   before_script:
