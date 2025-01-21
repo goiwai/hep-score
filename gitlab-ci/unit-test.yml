@@ -1,7 +1,6 @@
-
 pep8:
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:latest 
   dependencies: []
   rules:
     - if: $CI_COMMIT_TAG
@@ -26,7 +25,7 @@ pep8:
 
 tox_tests:
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:latest 
   rules:
     - if: $CI_COMMIT_TAG
       when: never
@@ -41,7 +40,7 @@ tox_tests:
 
 security:
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:latest 
   rules:
     - if: $CI_COMMIT_TAG
       when: never
@@ -52,7 +51,7 @@ security:
 test_python_support:
   # determine minimum supported python version
   stage: unit-test
-  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:BMK-1394 
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:latest 
   script:
     - python3 -m pip install vermin
     - vermin -vv .
