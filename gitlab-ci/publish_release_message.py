@@ -9,8 +9,8 @@ ci_api_token = os.getenv("CI_API_TOKEN")
 ci_commit_tag = os.getenv("CI_COMMIT_TAG")
 ci_commit_tag_message = os.getenv("CI_COMMIT_TAG_MESSAGE", "No release notes.")
 
-#if not ci_commit_tag:
-#    raise ValueError("CI_COMMIT_TAG is not set.")
+if not ci_commit_tag:
+    raise ValueError("CI_COMMIT_TAG is not set.")
 
 # Collect JSON data from files
 assets_links = []
@@ -37,7 +37,7 @@ payload = {
 }
 
 print(payload)
-exit(0)
+
 # API Endpoint
 url = f"{ci_api_v4_url}/projects/{ci_project_id}/releases"
 
