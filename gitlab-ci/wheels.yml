@@ -62,12 +62,4 @@ publish_wheels:
   script:
     # create release w/ package dl
     # YAML eating special characters
-    - |
-       if [ "$CI_COMMIT_TAG" != "" ]; then
-         python3 $CI_PROJECT_DIR/gitlab-ci/publish_release_message.py    
-        # curl -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
-        # --header "PRIVATE-TOKEN: ${CI_API_TOKEN}" \
-        # --header "Content-Type: application/json" \
-        # --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\", \"assets\": { \"links\": [{ \"name\": \"HEPscore python wheels ${PKG_NAME} (md5sum: ${PKG_HASH})\", \"url\": \"${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}\", \"link_type\":\"package\" }] }}" \
-        # --fail --output "/dev/null" --silent --show-error --write-out "HTTP response: ${http_code:-OK}\n\n"
-      fi
+    - if [ "$CI_COMMIT_TAG" != "" ]; then python3 $CI_PROJECT_DIR/gitlab-ci/publish_release_message.py; fi
