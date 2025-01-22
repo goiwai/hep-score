@@ -35,7 +35,7 @@ build_wheels:
     - stat retrieved_file
     - stat ${PKG_NAME}
     - cmp retrieved_file ${PKG_NAME} 
-    - json_string="{ \"name\":\"HEPscore python wheels ${PKG_NAME} (md5sum:\ ${PKG_HASH})\", \"url\":\"${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}\", \"link_type\":\"package\" }"
+    - json_string="{ \"name\":\"HEPscore python wheels ${PKG_NAME} (md5sum ${PKG_HASH})\", \"url\":\"${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}\", \"link_type\":\"package\" }"
     - echo ${json_string} | jq . > file_metadata_${PYTHON_VERSION/thon}-${ARCH}.json
     
   artifacts:
