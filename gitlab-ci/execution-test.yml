@@ -4,7 +4,7 @@
 # - singularity accessing native docker
 # - singularity accessing sif images
 hw-sing-x86:
-  retry: 2
+  retry: 1
   image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
   dependencies: []  # to avoid artifacts from previous jobs
   tags:

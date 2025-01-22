@@ -15,7 +15,7 @@ build_wheels:
   tags:
     - $ARCH
   before_script:
-    - yum install -y git sshpass curl diffutils
+    - yum install -y git sshpass curl diffutils jq
     - echo -e "StrictHostKeyChecking no\nPreferredAuthentications keyboard-interactive" >> /etc/ssh/ssh_config
     - dnf install -y epel-release # To install python3.11 and above
     - dnf install -y -q $PYTHON_VERSION --setopt=install_weak_deps=True
@@ -23,7 +23,6 @@ build_wheels:
     - python3 -m pip install --upgrade setuptools wheel pip
 
   script:
-    #- yum install -y python3-pip sshpass coreutils curl diffutils
     - pip3 wheel -r requirements.txt --wheel-dir=hepscore_wheels .
     - export PKG_NAME="hepscore-wheels-${ID}-${PYTHON_VERSION/thon}-${ARCH}.tar.gz"
     - echo "PKG_NAME is ${PKG_NAME}"
@@ -36,22 +35,42 @@ build_wheels:
     - stat retrieved_file
     - stat ${PKG_NAME}
     - cmp retrieved_file ${PKG_NAME}
-    # create release w/ package dl
-    # YAML eating special characters :
-    - |
-      if [ "$CI_COMMIT_TAG" != "" ]; then
-        curl -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
-        --header "PRIVATE-TOKEN: ${CI_API_TOKEN}" \
-        --header "Content-Type: application/json" \
-        --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\", \"assets\": { \"links\": [{ \"name\": \"HEPscore python wheels (md5sum: ${PKG_HASH})\", \"url\": \"${CI_WEB_RELEASES}${PKG_NAME}\", \"link_type\":\"package\" }] }}" \
-        --fail --output "/dev/null" --silent --show-error --write-out "HTTP response: ${http_code:-OK}\n\n"
-      fi
+    - json_string="{ \"name\": \"HEPscore python wheels ${PKG_NAME} (md5sum: ${PKG_HASH})\", \"url\": \"${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}\", \"link_type\": \"package\" }"
+    - echo ${json_string} | jq . > file_metadata_${PYTHON_VERSION/thon}-${ARCH}.json
+    
   artifacts:
     paths:
       - hepscore_wheels
       - hepscore-wheels-*.tar.gz
+      - file_metadata_${PYTHON_VERSION/thon}-${ARCH}.json
     when: always
   parallel:
     matrix:
       - ARCH: [x86_64, aarch64]
         PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
+
+
+publish_wheels:
+  needs: ["build_wheels"]
+  image: gitlab-registry.cern.ch/linuxsupport/alma8-base
+  stage: build-wheels
+  retry: 1
+  rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        ID: $CI_COMMIT_TAG
+        LOCAL_PATH: $ID
+  before_script:
+    - yum install -y curl
+  script:
+    # create release w/ package dl
+    # YAML eating special characters :
+    - |
+    #   if [ "$CI_COMMIT_TAG" != "" ]; then
+       python publish_release_message.py    
+    #     curl -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
+    #     --header "PRIVATE-TOKEN: ${CI_API_TOKEN}" \
+    #     --header "Content-Type: application/json" \
+    #     --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\", \"assets\": { \"links\": [{ \"name\": \"HEPscore python wheels ${PKG_NAME} (md5sum: ${PKG_HASH})\", \"url\": \"${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}\", \"link_type\":\"package\" }] }}" \
+    #     --fail --output "/dev/null" --silent --show-error --write-out "HTTP response: ${http_code:-OK}\n\n"
+    #  fi
