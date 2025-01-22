@@ -4,6 +4,7 @@ stages:
   - execution-test
   - collect-test
   - build-wheels
+  - publish-wheels
   - archive-images
 
 include: 'gitlab-ci/**.yml'
