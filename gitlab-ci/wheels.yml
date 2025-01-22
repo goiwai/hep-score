@@ -59,6 +59,10 @@ publish_wheels:
       variables:
         ID: $CI_COMMIT_TAG
         LOCAL_PATH: $ID
+    - if: $CI_COMMIT_BRANCH == 'BMK-1575'
+      variables:
+        ID: $CI_COMMIT_BRANCH
+        LOCAL_PATH: dev/$ID
   before_script:
     - yum install -y curl
   script:
