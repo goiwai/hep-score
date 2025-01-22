@@ -66,6 +66,7 @@ publish_wheels:
         LOCAL_PATH: dev/$ID
   before_script:
     - yum install -y curl
+    - pip install requests
   script:
     # create release w/ package dl
     # YAML eating special characters
