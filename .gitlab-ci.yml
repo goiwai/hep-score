@@ -1,6 +1,7 @@
 stages:
   - build-testing-image
   - build-wheels
+  - publish-wheels
   - unit-test
   - execution-test
   - collect-test
