@@ -23,6 +23,7 @@ import sys
 import hashlib
 import urllib.request
 import shutil
+from urllib.parse import urlparse
 
 def parse_yaml_file(input_config):
     """
