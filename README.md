@@ -137,9 +137,12 @@ well as all dependency wheels, are available/published in the
 [HEPScore release documentation](https://gitlab.cern.ch/hep-benchmarks/hep-score/-/releases).
 An archive of all released wheel tarfiles is also available here: 
 <https://hep-benchmarks.web.cern.ch/hep-score/releases/>.
+
 These wheels can be used to install HEPScore via pip on hosts without
 network connectivity.  To install, after downloading and untarring a
-release tarfile, execute ```pip install --user hepscore_wheels/*.whl```.
+release tarfile, execute 
+
+```python3.<version> -m pip install --user hepscore_wheels/*.whl```.
 
 You can access the x86_64 and aarch64 tarfiles containing all of the workloads used in the
 default HEPScore configuration
