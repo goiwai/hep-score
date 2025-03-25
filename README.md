@@ -23,8 +23,8 @@ For instructions on how to run the HEPScore23 benchmark, please refer to the [de
 
 ## HEPScore23 Benchmark
 
-HEPScore23 is a benchmark based on containerized HEP workloads that
-is replacing HEPSPEC06 as the standard HEPiX/WLCG benchmark.  It is consists 
+HEPScore23 is a benchmark based on containerized HEP workloads, 
+replacing HEPSPEC06 as the standard HEPiX/WLCG benchmark.  It consists 
 of the following workloads:
 [HEP Workloads project](
 https://gitlab.cern.ch/hep-benchmarks/hep-workloads):  
@@ -39,27 +39,26 @@ alice-digi-reco-core-run3-ma-bmk
 You can view the YAML HEPScore configuration for HEPScore23 by
 executing ```hep-score -p```.
 
-The benchmark will take 5+ hours to execute on modern hardware.
+The benchmark takes over 3 hours to execute on modern hardware.
 
-**NOTE**: ~35 GB of free disk space in your Singularity or Docker
+**NOTE**: ~35 GB of free disk space in your Singularity/Apptainer or Docker
 cache area, and 320 MB/core of free space (e.g. 20 GB on 64 core host)
 in the specified OUTDIR output directory is necessary to run the
-HEPScore23 benchmark.  If passed the ```-c``` (clean images) and
-```-C``` (clean files) command line options, hep-score will clean
-the benchmark container images and output after execution, which will 
-greatly reduce the amount of space needed to run.
+HEPScore23 benchmark.  If the ```-c``` (clean images) and
+```-C``` (clean files) command-line options are used, hep-score will clean
+the benchmark container images and output after execution, greatly reducing the amount of space needed to run.
 
 It is also possible to run the benchmark containers out of the
 "unpacked.cern.ch" CVMFS repo instead of the CERN gitlab Docker registry,
-by passing ```hep-score``` the ```-i dir``` parameter.  When running the
-benchmark using the unpacked images in CVMFS, the Singularity cache area
+by passing  the ```-i dir``` parameter.  When running the
+benchmark using the unpacked images in CVMFS, the Singularity/Apptainer cache area
 is not utilized.
 
 ## HEPScore detailed
 
 HEPScore is specifically designed for use with containers from the 
 [HEP Workloads project](https://gitlab.cern.ch/hep-benchmarks/hep-workloads).
-However, any benchmark containers stored in a Docker/Singularity
+However, any benchmark containers stored in a Docker/Singularity/Apptainer
 registry, or filesystem directory, which conform to the HEP Workloads'
 output JSON schema, are potentially usable.  
 
@@ -70,8 +69,8 @@ from the HEP Workloads project as long as a "docker" symlink exists to the
 "podman" binary, and the open file descriptor ulimit can be set to 100k or 
 higher (this may require administrator privileges).
 
-By default, if no configuration is passed to HEPScore, the "HEPScore23"
-benchmark is run.
+By default, if no configuration is provided, HEPScore runs the "HEPScore23"
+configuration.
 
 ### HEPScore Score Computation
 
@@ -103,7 +102,7 @@ To install as a regular user (suggested):
 ```$ pip install --user git+https://gitlab.cern.ch/hep-benchmarks/hep-score.git```  
 The ```hep-score``` script will then be accessible under ```~/.local/bin```.  
 
-To install as regular user in a python virtual environment:
+To install as a regular user in a python virtual environment:
 
 ```
 export VERSION=v2.0           # Or any other version of HEPScore
@@ -119,7 +118,7 @@ hep-score and all dependencies in system Python/bin paths:
 ```# pip install git+https://gitlab.cern.ch/hep-benchmarks/hep-score.git```
 
 Alternatively, you can clone the hep-score git repository, and run the pip
-installation out of the root directory of the repo:
+installation from the repository’s root directory:
 
 ```sh
 $ git clone https://gitlab.cern.ch/hep-benchmarks/hep-score.git
@@ -127,7 +126,7 @@ $ cd hep-score
 $ pip install --user .
 ```
 
-**NOTE**: on RHEL/CentOS/Scientific Linux 7 hosts, where python 3 is not
+**NOTE**: on RHEL/CentOS/Scientific Linux 7 systems, where python 3 is not
 the default python installation, it may be necessary to use ```pip3``` to
 install instead of ```pip```.
 
@@ -138,7 +137,7 @@ well as all dependency wheels, are available/published in the
 An archive of all released wheel tarfiles is also available here: 
 <https://hep-benchmarks.web.cern.ch/hep-score/releases/>.
 
-These wheels can be used to install HEPScore via pip on hosts without
+These wheels can be used to install HEPScore via pip on systems without
 network connectivity.  To install, after downloading and untarring a
 release tarfile, execute 
 
@@ -147,25 +146,23 @@ release tarfile, execute
 You can access the x86_64 and aarch64 tarfiles containing all of the workloads used in the
 default HEPScore configuration
 for each HEPScore released version.
-These archives are available aat <https://hep-benchmarks.web.cern.ch/hep-score/images> .
+These archives are available at <https://hep-benchmarks.web.cern.ch/hep-score/images> .
 
-Each folder in the archive repository contains the following three files:
+Each folder in the archive contains the following three files:
 - **Tar Archive**: Contains all the workload images.
 - **JSON List**: A JSON file listing the included workload images.
 - **SHA256sum Text File**: Text file containing the SHA256 hash of the tar archive.
 
 The naming convention for folders and files follows the pattern `<arch>_<hash>`, where `<arch>` represents the specific architecture (either aarch64 or x86_64), and `<hash>` is a unique identifier for the list of images available in that archive.
 
-After having downloaded and untar the tar archive, the local workloads can be used with hep-score by passing the
+After having downloaded and extracted the tar archive, the local workloads can be used with hep-score by passing the
 directory with the ```-R``` or ```--registry``` options, i.e.:
 ```hep-score --registry dir:///PATH_TO_UNTARRED_WORKLOADS/ /tmp```
 
 ### Dependencies
 
-HEPScore requires a **Python 3.6+** installation.  The pip installation will pull
-in all python module dependencies.  HEPScore should be used with **Apptainer 1.1.3
-and newer**, **Singularity 3.5.3 and newer**, or **Docker 1.13 and newer**.  There are 
-some known issues when using HEPScore with earlier Singularity and Docker releases.
+HEPScore requires a **Python 3.6 or later** installation.  The pip installation will automatically install all required Python modules.  HEPScore should be used with **Apptainer 1.1.3
+and newer**, **Singularity 3.5.3 and newer**, or **Docker 1.13 and newer**.  There are known issues with running HEPScore with earlier Singularity and Docker releases.
 
 **NOTE**: if you are running hep-score on a host with over 100 cores, it may be
 necessary to increase your max user processes ulimit before execution.
@@ -232,7 +229,7 @@ $ hep-score --registry dir:///home/bmk/hs23-workloads /tmp
 
 ```
 
-Singularity will be used as the container engine for the run, unless Docker
+Singularity/Apptainer is the default container engine unless Docker
 is specified on the hep-score commmandline (```-m docker```), or in the
 benchmark configuration.
 
@@ -242,8 +239,8 @@ log of the run of the application is also written to this directory:
 BENCHMARK_NAME.log, where BENCHMARK_NAME is taken from the "name" parameter in
 the YAML configuration ("HEPscore23.log" by default).
 
-The final computed score will be printed to stdout ("Final score: XYZ"), and
-also stored in a summary output JSON (or YAML, if ```-y``` is specified) file
+The final computed score is printed to stdout ("Final score: XYZ"), and
+saved in a summary output file as JSON (or YAML, if ```-y``` is specified)
 under OUTDIR (unless an alternative location is specified with ```-o```).  This
 file also contains all of the summary JSON output data from each sub-benchmark.
 
@@ -396,7 +393,7 @@ multiplied by this value to compute the final score
 
 ##### container_exec
 
-STRING; defaullt = "singularity"  
+STRING; default = "singularity"  
 Allows one to specify the default container execution platform:
 "singularity" and "docker" are supported.  This can be overridden on the
 commandline
