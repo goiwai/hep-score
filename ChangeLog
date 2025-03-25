@@ -1,9 +1,9 @@
 v2.0
 ----
 -Documentation updates
-- Distribute wheels of hepscore for multiple archs and python versions
-- Include a configuration with updated workloads from Alice and Atlas
-- Implements the archive of the workload images
+-Distribute wheels of hepscore for multiple archs and python versions
+-Include a configuration with updated workloads from Alice and Atlas
+-Implements the archive of the workload images
 -Display additional container engine output logs on failure, with decoding
 -Don't pass apptainer the '--unsquash' option if running as root
 -Utilize tmp subdirectory in OUTDIR for /tmp and /var/tmp bindmounts
