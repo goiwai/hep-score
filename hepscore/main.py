@@ -15,9 +15,20 @@ import textwrap
 import time
 import yaml
 import hepscore.hepscore as hepscore
+from datetime import datetime
 
 logger = logging.getLogger()
 
+exit_status_dict = {
+    'Success' : 0,
+    'Error 2 config passed': 1,
+    'Error missing outdir': 2,
+    'Error wrong configfile format': 3,
+    'Error malformed config file': 4,
+    'Error missing resultdir': 5,
+    'Error not valid resultdir': 6,
+    'Error failed outdir creation': 7,
+}
 
 def parse_args(args):
 
@@ -48,7 +59,10 @@ def parse_args(args):
         $ hep-score -l
 
         Run with a specified built-in benchmark configuration:
-        $ hep-score -n hepscore_testkv /tmp
+        $ hep-score -b hepscore-testkv /tmp
+
+        Run using the workload containers in a local directory:
+        $ hep-score --registry dir:///home/bmk/hs23-workloads /tmp
 
         Included benchmark configuraton files available in:
         ''' + hepscore.config_path)
@@ -61,6 +75,10 @@ def parse_args(args):
                         nargs='?', default=False,
                         help="specify container platform for benchmark execution "
                              "(singularity [default], or docker).")
+    parser.add_argument("-i", "--container_uri", choices=['docker', 'shub', 'dir', 'oras', 'https'],
+                        nargs='?', default=False,
+                        help="specify container registry type "
+                             "(oras, docker, shub, dir, https).")
     parser.add_argument("-S", "--userns", action='store_true',
                         help="enable user namespace for Singularity, if supported.")
     parser.add_argument("-c", "--clean", action='store_true',
@@ -71,8 +89,12 @@ def parse_args(args):
                         help="custom config yaml to use instead of default.")
     parser.add_argument("-l", "--list", action='store_true',
                         help="list built-in benchmark configurations and exit.")
-    parser.add_argument("-n", "--namedconf", nargs='?', default='',
+    parser.add_argument("-b", "--builtinconf", nargs='?', default='',
                         help="use specified named built-in benchmark configuration.")
+    parser.add_argument("-R", "--registry", nargs='?', default=None,
+                        help="override the configured registry.")
+    parser.add_argument("-n", "--ncores", nargs='?', default=None,
+                        help="custom number of cores to be loaded. This parameter will change the hash function")
     parser.add_argument("-r", "--replay", action='store_true',
                         help="replay output using existing results directory OUTDIR.")
     parser.add_argument("-o", "--outfile", nargs='?', default=False,
@@ -87,21 +109,9 @@ def parse_args(args):
                         help="enables verbose mode. Display debug messages.")
 
     arg_dict = vars(parser.parse_args(args))
-
-    if arg_dict['OUTDIR'] is None and not (arg_dict['print'] or arg_dict['list']):
-        print("Output directory required. 'hep-score <args> OUTDIR\n"
-              "See usage: 'hep-score --help'")
-        sys.exit(2)
-
     return arg_dict
 
-
-def main():
-    """Command-line entry point. Parses arguments to construct configuration dict."""
-    args = parse_args(sys.argv[1:])
-    default_config = hepscore.config_path + "/hepscore-default.yaml"
-
-    user_args = {k: v for k, v in args.items() if v is not False}
+def set_loglevel(user_args):
     vstring = ' '
     vlevel = logging.INFO
     if 'verbose' in user_args:
@@ -110,68 +120,117 @@ def main():
     logging.basicConfig(format='%(asctime)s hepscore' + vstring + '[%(levelname)s] %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S', level=vlevel)
 
+def check_args(args):
+    # FAIL if OUTDIR is None and neither print nor list is set
+    if args['OUTDIR'] is None and not (args['print'] or args['list']):
+        print("Output directory required. 'hep-score <args> OUTDIR\n"
+              "See usage: 'hep-score --help'")
+        sys.exit(exit_status_dict['Error missing outdir'])
+
+    # FAIL if both a configuration file and a built-in configuration are specified
+    if args['conffile']!='' and args['builtinconf']!='':
+        logger.error('Cannot specify both a configuration file and a built-in configuration')
+        sys.exit(exit_status_dict['Error 2 config passed'])
+
+def main():
+    """Command-line entry point. Parses arguments to construct configuration dict."""
+    args = parse_args(sys.argv[1:])
+
+    check_args(args)
+
+    # Set default configuration file path
+    default_config = hepscore.config_path + "/hepscore-default.yaml"
+
+    # Extract arguments provided by the user that are not False
+    user_args = {k: v for k, v in args.items() if v is not False}
+
+    # Set logging format and level based on verbosity
+    set_loglevel(user_args)
+
+    # Check if the list flag is set, print available configurations, and exit
     if args['list']:
         print("Available built-in HEPscore benchmark configurations:")
         for f in hepscore.list_named_confs():
             print(f)
-        sys.exit(0)
+        sys.exit(exit_status_dict['Success'])
 
-    if args['conffile']!='' and args['namedconf']!='':
-        logger.error('Cannot specify both a configuration file and a built-in configuration')
-        sys.exit(1)
-
+    # Determine the configuration file to use
     if args['conffile']!='':
         conffile = args.pop('conffile')
-    elif args['namedconf']!='':
-        if args['namedconf'] not in hepscore.list_named_confs():
-            logging.error("%s not an available built-in configuration", args['namedconf'])
-        conffile = hepscore.named_conf(args.pop('namedconf'))
+    elif args['builtinconf']!='':
+        if args['builtinconf'] not in hepscore.list_named_confs():
+            logging.error("%s not an available built-in configuration", args['builtinconf'])
+        conffile = hepscore.named_conf(args.pop('builtinconf'))
     else:
         conffile = default_config
 
-    active_config = hepscore.read_yaml(conffile)
+    # Read the active configuration from the chosen configuration file
+    try:
+        active_config = hepscore.read_yaml(conffile)
+    except:
+        logger.error("Configuration file %s is not a correct yaml file. EXIT"%conffile)
+        sys.exit(exit_status_dict['Error wrong configfile format'])
 
+    # If the print flag is set, print the active configuration and exit
     if args['print']:
         print(yaml.safe_dump(active_config, sort_keys=False))
-        sys.exit(0)
+        sys.exit(exit_status_dict['Success'])
 
     # Don't let users pass their dirs in conf object
     outdir = args.pop('OUTDIR', None)
 
-    # separate conainment overide from options
+    usekey = None
+    for bmkey in ['hepscore', 'hepscore_benchmark']:
+        if bmkey in active_config:
+            usekey = bmkey
+            break
+    if usekey is None:
+        logging.error("Required 'hepscore' key not in configuration!")
+        sys.exit(exit_status_dict['Error malformed config file'])
+
+    # separate containment overide from options
     if args['container_exec']:
-        active_config['hepscore_benchmark']['settings']['container_exec'] \
+        active_config[usekey]['settings']['container_exec'] \
             = args.pop('container_exec')
 
     outtype = 'yaml' if 'yaml' in user_args else 'json'
     user_args.pop('yaml', None)
 
     # Populate active config with cli override
-    if 'options' not in active_config['hepscore_benchmark']:
-        active_config['hepscore_benchmark']['options'] = {}
+    if 'options' not in active_config[usekey]:
+        active_config[usekey]['options'] = {}
     for arg in user_args:
-        active_config['hepscore_benchmark']['options'][arg] = user_args[arg]
+        if user_args[arg] != None:
+            if arg == 'ncores':
+                sval = int(user_args[arg])
+            else:
+                sval = user_args[arg]
 
+            if arg == 'registry':
+                print("NOTICE - overriding config registry with " + sval)
+
+            active_config[usekey]['options'][arg] = sval
 
     # check replay outdir actually contains a run...
     if args['replay']:
         if not os.path.isdir(outdir):
-            print("Replay did not find a valid directory at " + outdir)
-            sys.exit(1)
+            logging.error("Replay did not find a valid directory at " + outdir)
+            sys.exit(exit_status_dict['Error missing resultdir'])
         else:
             resultsdir = outdir
     else:
+        # real run, not a replay of an existing run
         try:
             resultsdir = os.path.join(outdir, hepscore.HEPscore.__name__ + '_' + \
                 time.strftime("%d%b%Y_%H%M%S"))
             os.makedirs(resultsdir)
         except NotADirectoryError:
             logger.error("%s not valid directory", resultsdir)
-            sys.exit(1)
+            sys.exit(exit_status_dict['Error not valid resultdir'])
         except PermissionError:
             logger.error("Failed creating output directory %s. Do you have write permission?",
                          resultsdir)
-            sys.exit(1)
+            sys.exit(exit_status_dict['Error failed outdir creation'])
 
     hep_score = hepscore.HEPscore(active_config, resultsdir)
 

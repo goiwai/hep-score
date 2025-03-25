@@ -16,7 +16,7 @@ export WLDIR=$TESTDIR/data/HEPscore_ci/
 }
 
 
-@test "Test parsing of existing atlas-kv-bmk results" {
+@test "Test parsing of existing bmk results" {
     run hep-score -r -f $HEPSCORECONF $WLDIR
     echo -e "$output"
     [ "$status" -eq 0 ]
@@ -24,7 +24,7 @@ export WLDIR=$TESTDIR/data/HEPscore_ci/
 }
 
 
-function run_atlas-kv-bmk {
+function run_bmk {
 	 export WDIR=/tmp/HEPSCORE/$CI_JOB_ID
 	 if [ ! -e $WDIR ]; then	
    	    mkdir -p $WDIR
@@ -32,8 +32,22 @@ function run_atlas-kv-bmk {
 	 hep-score -v -f $TESTDIR/etc/hepscore_conf_ci.yaml $WDIR
 }
 
-@test "Test run of hep-score with configuration for atlas-kv-bmk" {
-    run run_atlas-kv-bmk
+@test "Test run of hep-score with configuration hepscore_conf_ci.yaml" {
+    run run_bmk
+    echo -e "$output"
+    [ "$status" -eq 0 ]
+}
+
+function run_bmk_gpu {
+	 export WDIR=/tmp/HEPSCORE/$CI_JOB_ID
+	 if [ ! -e $WDIR ]; then	
+   	    mkdir -p $WDIR
+	 fi
+	 hep-score -v -f $TESTDIR/etc/hepscore_conf_ci_gpu.yaml $WDIR
+}
+
+@test "Test run of hep-score with configuration hepscore_conf_ci_gpu.yaml" {
+    run run_bmk_gpu
     echo -e "$output"
     [ "$status" -eq 0 ]
 }

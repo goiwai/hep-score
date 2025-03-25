@@ -1,0 +1,65 @@
+build_wheels:
+  image: gitlab-registry.cern.ch/linuxsupport/alma8-base
+  stage: build-wheels
+  retry: 1
+  needs: []
+  rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        ID: $CI_COMMIT_TAG
+        LOCAL_PATH: $ID
+  tags:
+    - $ARCH
+  before_script:
+    - yum install -y git sshpass curl diffutils jq
+    - echo -e "StrictHostKeyChecking no\nPreferredAuthentications keyboard-interactive" >> /etc/ssh/ssh_config
+    - dnf install -y epel-release # To install python3.11 and above
+    - dnf install -y -q $PYTHON_VERSION --setopt=install_weak_deps=True
+    - if [ "${PYTHON_VERSION}" != "python36" ]; then dnf install -y -q ${PYTHON_VERSION}-pip; fi
+    - python3 -m pip install --upgrade setuptools wheel pip
+
+  script:
+    - pip3 wheel -r requirements.txt --wheel-dir=hepscore_wheels .
+    - export PKG_NAME="hepscore-wheels-${ID}-${PYTHON_VERSION/thon}-${ARCH}.tar.gz"
+    - echo "PKG_NAME is ${PKG_NAME}"
+    - tar -czvf ${PKG_NAME} hepscore_wheels
+    - export PKG_HASH=$(md5sum ${PKG_NAME} | cut -d ' ' -f 1)
+    - export FULL_RELEASE_PATH=$CI_EOS_RELEASES/$LOCAL_PATH
+    - SSHPASS=${CI_CPUBMK} sshpass -v -e ssh -oStrictHostKeyChecking=no cpubmk@lxplus.cern.ch "[ -d ${FULL_RELEASE_PATH} ] || mkdir -p ${FULL_RELEASE_PATH};"
+    - SSHPASS=${CI_CPUBMK} sshpass -v -e scp -oStrictHostKeyChecking=no -r ${PKG_NAME} cpubmk@lxplus.cern.ch:${FULL_RELEASE_PATH}
+    - curl -o retrieved_file ${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}
+    - stat retrieved_file
+    - stat ${PKG_NAME}
+    - cmp retrieved_file ${PKG_NAME} 
+    - json_string="{ \"name\":\"HEPscore python wheels ${PKG_NAME} (md5sum ${PKG_HASH})\", \"url\":\"${CI_WEB_RELEASES}/${LOCAL_PATH}/${PKG_NAME}\", \"link_type\":\"package\" }"
+    - echo ${json_string} | jq . > file_metadata_${PYTHON_VERSION/thon}-${ARCH}.json
+    
+  artifacts:
+    paths:
+      - hepscore_wheels
+      - hepscore-wheels-*.tar.gz
+      - file_metadata_${PYTHON_VERSION/thon}-${ARCH}.json
+    when: always
+  parallel:
+    matrix:
+      - ARCH: [x86_64, aarch64]
+        PYTHON_VERSION: [python36, python38, python39, python3.11, python3.12]
+
+
+publish_wheels:
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-score/tox:latest 
+  stage: publish-wheels
+  retry: 1
+  needs: ["build_wheels"]
+  rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        ID: $CI_COMMIT_TAG
+        LOCAL_PATH: $ID
+  before_script:
+    - yum install -y curl
+    - pip install requests
+  script:
+    # create release w/ package dl
+    # YAML eating special characters
+    - if [ "$CI_COMMIT_TAG" != "" ]; then python3 $CI_PROJECT_DIR/gitlab-ci/publish_release_message.py; fi

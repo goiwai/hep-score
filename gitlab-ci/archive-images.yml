@@ -1,0 +1,28 @@
+archive_images:
+  stage: archive-images
+  image: gitlab-registry.cern.ch/hep-benchmarks/hep-workloads/hep-workload-builder-multiarch:latest
+  retry: 0
+  tags:
+    - $ARCH
+  rules:
+    - if: $CI_COMMIT_TAG
+  variables: 
+    #default_config: ${CI_PROJECT_DIR}/hepscore/tests/etc/hepscore_conf_ci_helloworld_2.yaml
+    default_config: ${CI_PROJECT_DIR}/hepscore/etc/hepscore-default.yaml
+    workdir: /tmp/HEPSCORE/$CI_JOB_ID
+    remote_archive: https://hep-benchmarks.web.cern.ch/hep-score/images/archives/
+    destination_folder: ${CI_EOS_RELEASES}/../images/archives
+  script:
+    - chmod u+x $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
+    - $CI_PROJECT_DIR/gitlab-ci/archive-images.sh
+  after_script:
+    - tar -czf archive_images.tgz /tmp/HEPSCORE/$CI_JOB_ID/*json /tmp/HEPSCORE/$CI_JOB_ID/*txt 
+  artifacts:
+      paths:
+        - archive_images.tgz
+      expire_in: 1 week
+      when: always
+  parallel:
+    matrix:
+      - ARCH: [x86_64, aarch64]
+

@@ -8,12 +8,11 @@ import json
 import logging
 import os
 import yaml
-# from parameterized import parameterized
+from parameterized import parameterized
 import shutil
 import sys
 import unittest
 from unittest.mock import patch, mock_open
-
 
 class Test_Constructor(unittest.TestCase):
 
@@ -22,13 +21,13 @@ class Test_Constructor(unittest.TestCase):
             HEPscore(resultsdir="/tmp")
 
     def test_fail_read_conf(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(SystemExit):
             HEPscore(dict(), "/tmp")
 
     @patch.object(HEPscore, 'validate_conf')
     def test_succeed_read_set_defaults(self, mock_validate):
-        standard = {'hepscore_benchmark':
-                    {'settings': {'name': 'test', 'registry': 'docker://',
+        standard = {'hepscore':
+                    {'settings': {'name': 'test', 'registry': ['oras://abcd'],
                                   'reference_machine': 'unknown',
                                   'method': 'geometric_mean',
                                   'repetitions': 1}}}
@@ -38,31 +37,30 @@ class Test_Constructor(unittest.TestCase):
 
         self.assertEqual(hs.cec, "singularity")
         self.assertEqual(hs.resultsdir, "/tmp")
-        self.assertEqual(hs.confobj, standard['hepscore_benchmark'])
+        self.assertEqual(hs.confobj, standard['hepscore'])
 
     @patch.object(HEPscore, 'validate_conf')
     def test_succeed_override_defaults(self, mock_validate):
-        standard = {'hepscore_benchmark':
-                    {'settings': {'name': 'test', 'registry': 'docker://',
+        standard = {'hepscore':
+                    {'settings': {'name': 'test', 'registry': ['docker://abcd'],
                                   'reference_machine': 'unknown',
                                   'method': 'geometric_mean',
                                   'repetitions': 1,
-                                  'container_exec': 'singularity'}}}
+                                  'container_exec': 'docker'}}}
         test_config = standard.copy()
 
         hs = HEPscore(test_config, "/tmp1")
 
-        self.assertEqual(hs.cec, "singularity")
+        self.assertEqual(hs.cec, "docker")
         self.assertEqual(hs.resultsdir, "/tmp1")
-        self.assertEqual(hs.confobj, standard['hepscore_benchmark'])
-
+        self.assertEqual(hs.confobj, standard['hepscore'])
 
 class TestRun(unittest.TestCase):
 
     def setUp(self):
         head, _ = os.path.split(__file__)
         self.path = os.path.normpath(
-            os.path.join(head, 'etc/hepscore_conf_bmsreco_only.yaml'))
+            os.path.join(head, 'etc/hepscore_conf_ci_helloworld.yaml'))
         self.emptyPath = os.path.normpath(
             os.path.join(head, 'etc/hepscore_empty_conf.yaml'))
         self.resPath = os.path.normpath(head)
@@ -84,6 +82,83 @@ class TestRun(unittest.TestCase):
             self.assertEqual(cm.exception.code, 2)
         shutil.rmtree("/tmp/test_run_empty_cfg")
 
+    @parameterized.expand([
+    ('docker', 'docker', 0),  # 0 is UserWarning
+    ('docker', 'oras',  1),   # 1 is SystemExit
+    ('docker', 'dir', 1),
+    ('singularity', 'docker',  0),
+    ('singularity', 'oras',  0),
+    ('singularity', 'dir',  0),
+     ])
+    def test_cec_curi_combinations(self, container_exec, container_uri , testidx):
+
+        with open(self.path, 'r') as yam:
+            test_config = yaml.full_load(yam)
+
+        test_config['hepscore']['options'] = {'container_uri': container_uri}
+
+        test_config['hepscore']['settings'].update(
+            {'container_exec': container_exec}
+        )
+
+        if testidx == 0:
+            self.assertIsInstance(HEPscore(test_config, "/tmp1"), HEPscore)
+        elif testidx == 1:
+            with self.assertRaises(SystemExit):
+                HEPscore(test_config, "/tmp1")
+        
+    @parameterized.expand([
+    ('docker', 'docker', "docker://abcd", 0),  # 0 is UserWarning
+    ('docker', 'oras', "docker://abcd", 1),   # 1 is SystemExit
+    ('docker', 'dir', "docker://abcd", 1),
+    ('singularity', 'docker', "docker://abcd", 0),
+    ('singularity', 'oras', "docker://abcd", 1),
+    ('singularity', 'dir', "docker://abcd", 1),
+    ('singularity', 'oras', "oras://abcd", 0),
+    ('singularity', 'dir', "dir://abcd", 0),
+     ])
+    def test_cec_curi_combinations_string_registry(self, container_exec, container_uri , registry, testidx):
+
+        with open(self.path, 'r') as yam:
+            test_config = yaml.full_load(yam)
+
+        test_config['hepscore']['options'] = {'container_uri': container_uri}
+
+        test_config['hepscore']['settings'].update(
+            {'registry' : registry ,
+             'container_exec': container_exec}
+        )
+
+        if testidx == 0:
+            self.assertIsInstance(HEPscore(test_config, "/tmp1"), HEPscore)
+        elif testidx == 1:
+            with self.assertRaises(SystemExit):
+                HEPscore(test_config, "/tmp1")
+
+    @parameterized.expand([
+    ('docker', "docker://abcd", 0),
+    ('docker', "oras://abcd", 1),
+    ('singularity', "docker://abcd", 0),
+    ('singularity',  "oras://abcd", 0),
+    ('singularity',  "dir://abcd", 0),
+     ])
+    def test_cec_curi_combinations_string_registry_default(self, container_exec , registry, testidx):
+
+        with open(self.path, 'r') as yam:
+            test_config = yaml.full_load(yam)
+
+        test_config['hepscore']['settings'].update(
+            {'registry' : registry ,
+            'container_exec': container_exec}
+        )
+        del test_config['hepscore']['options']['container_uri']
+
+        if testidx == 0:
+            self.assertIsInstance(HEPscore(test_config, "/tmp1"), HEPscore)
+        elif testidx == 1:
+            with self.assertRaises(SystemExit):
+                HEPscore(test_config, "/tmp1")
+
 
 class testOutput(unittest.TestCase):
 
@@ -100,10 +175,10 @@ class testOutput(unittest.TestCase):
         with open(conf, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['options'] = {}
-        test_config['hepscore_benchmark']['options']['level'] = 'DEBUG'
-        test_config['hepscore_benchmark']['options']['clean'] = True
-        test_config['hepscore_benchmark']['options']['clean_files'] = False
+        test_config['hepscore']['options'] = {}
+        test_config['hepscore']['options']['level'] = 'DEBUG'
+        test_config['hepscore']['options']['clean'] = True
+        test_config['hepscore']['options']['clean_files'] = False
 
         outtype = "json"
         outfile = ""
@@ -151,9 +226,9 @@ class testOutput(unittest.TestCase):
         with open(conf, 'r') as yam:
             test_config = yaml.full_load(yam)
 
-        test_config['hepscore_benchmark']['options'] = {}
-        test_config['hepscore_benchmark']['options']['level'] = 'DEBUG'
-        test_config['hepscore_benchmark']['options']['clean'] = True
+        test_config['hepscore']['options'] = {}
+        test_config['hepscore']['options']['level'] = 'DEBUG'
+        test_config['hepscore']['options']['clean'] = True
 
         outtype = "json"
         outfile = ""

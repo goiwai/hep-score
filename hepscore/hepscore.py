@@ -24,6 +24,7 @@ import sys
 import time
 import yaml
 from hepscore import __version__
+import shlex
 
 logger = logging.getLogger(__name__)
 
@@ -136,16 +137,22 @@ def weighted_geometric_mean(vals, weights=None):
 
 
 class HEPscore():
-    """HEPscore class."""
+    """HEPscore class"""
     allowed_methods = {'geometric_mean': weighted_geometric_mean}
     scorekey = 'wl-scores'
     cec = "singularity"
+    curi = ''
     engine = ""
     clean = False
     clean_files = False
     userns = False
+    ncores = 0  # ncores==0 is interpreted as default. hepscore does not force changes in the wl configs
     addarch = False
-
+    valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
+    valid_curis = {
+            'docker' : ['docker'],
+            'singularity'    : ['oras', 'docker', 'shub', 'dir', 'https']
+    }
     scache = ""
     unpack = ""
     registry = ""
@@ -155,7 +162,7 @@ class HEPscore():
     score = -1
 
     def __init__(self, config, resultsdir):
-        """HEPSCORE: a HEP benchmark SCORE generator.
+        """HEPSCORE: a HEP benchmark SCORE generator
 
         This class orchestrates HEP benchmarks (as docker or singularity images).
         The results are collected, calculated, and parsed into JSON or YAML reports.
@@ -170,8 +177,24 @@ class HEPscore():
             resultsdir (str): Path to output results
         """
         self.resultsdir = os.path.abspath(resultsdir)
-        self.confobj = config['hepscore_benchmark']
+
+        if 'hepscore_benchmark' in config:
+            logger.warning("Deprecated 'hepscore_benchmark' key found in configuration."
+                           "  Please update to 'hepscore'.");
+            config['hepscore'] = config['hepscore_benchmark']
+            del config['hepscore_benchmark']
+        if 'hepscore' not in config:
+            logger.error("Required 'hepscore' key not in configuration!")
+            sys.exit(1)
+
+        self.confobj = config['hepscore']
         self.settings = self.confobj['settings']
+        self.tmpdir = self.resultsdir + '/tmp'
+
+        if 'options' in self.confobj:
+            self.options = self.confobj['options']
+        else:
+            self.options = {}
 
         if 'container_exec' in self.settings:
             if self.settings['container_exec'] in (
@@ -181,55 +204,145 @@ class HEPscore():
                 logger.error("%s not understood. Stopping", self.settings['container_exec'])
                 sys.exit(1)
         else:
-            logger.warning("Container not specified on commandline or in config - assuming %s",
+            logger.debug("Container engine not specified on commandline or in config - assuming %s",
                            self.cec)
+
+        if 'container_uri' in self.options:
+            if self.options['container_uri'] in self.valid_uris:
+                self.curi = self.options['container_uri']
+            else:
+                logger.error("%s not understood. Stopping", self.options['container_uri'])
+                sys.exit(1)
 
         if 'addarch' in self.settings:
             self.addarch = self.settings['addarch']
 
-        if 'clean' in self.confobj.get('options', {}):
-            self.clean = self.confobj['options']['clean']
-            if self.cec == 'singularity':
+        # Allow overrides of ncores and registry via options
+        for optov in ('ncores', 'registry'):
+            if optov in self.options:
+                self.settings[optov] = self.options[optov]
+
+        # BMK-1388 do not enforce ncores if the passed value is equal to cpu_counts (the default running config)
+        # otherwise the hash will be changed without reason
+        # replace os.cpu_count() with len(os.sched_getaffinity(0)) to take into account
+        # the case of hepscore limited by taskset
+        if 'ncores' in self.settings and int(self.settings['ncores']) != len(os.sched_getaffinity(0)):
+            self.ncores = int(self.settings['ncores'])
+        else:
+            # put settings.ncores to 0, to report always an ncores in the hash
+            self.ncores=0
+            self.settings['ncores'] = self.ncores
+
+        if 'clean' in self.options:
+            self.clean = self.options['clean']
+            if self.clean and self.cec == 'singularity':
                 # Set absolute path location for scache
                 self.scache = os.path.abspath(self.resultsdir + '/scache')
-        if 'clean_files' in self.confobj.get('options', {}):
-            self.clean_files = self.confobj['options']['clean_files']
 
-        if 'userns' in self.confobj.get('options', {}):
-            self.userns = self.confobj['options']['userns']
+        if 'clean_files' in self.confobj.get('options', {}):
+            self.clean_files = self.options['clean_files']
+
+        if 'userns' in self.options:
+            self.userns = self.options['userns']
 
         self.confobj.pop('options', None)
         self.validate_conf()
-        self.registry = self._gen_reg_path()
+        # Update confobj for logging purposes once registry is resolved
+        self.confobj['settings']['registry'] = self._gen_regpath(self.settings['registry'])
+        self.registry = self._drop_uri(self.confobj['settings']['registry'])
 
-    def _gen_reg_path(self, reg_url=None):
-        uri = None
-        reg_path = None
-        valid_uris = ['docker', 'shub', 'dir', 'oras', 'https']
-        if reg_url is None:
-            try:
-                reg_url = self.confobj['settings']['registry']
-            except KeyError:
-                logger.error("Registry undefined")
+        # Update per-benchmark confobj registry setting for logging
+        if 'benchmarks' in self.confobj:
+            for bmk in self.confobj['benchmarks']:
+                if 'registry' in self.confobj['benchmarks'][bmk]:
+                    self.confobj['benchmarks'][bmk]['registry'] = self._gen_regpath(self.confobj['benchmarks'][bmk]['registry'])
+
+    def check_chars(self, checkstr):
+        """Check string for illegal special characters"""
+        return re.match(r'^[a-zA-Z0-9\-_]*$', checkstr)
+
+    def check_reg_chars(self, checkstr):
+        """Check string for illegal registry special characters"""
+        return re.match(r'^[a-zA-Z0-9:/\-_\.~]*$', checkstr)
+
+    def gen_reglist(self, regs):
+        """Given a registry string, or list of registries, return a list"""
+        if not isinstance(regs, list) and not isinstance(regs, str):
+            logger.error("Illegal format for registry. Use string or list of strings: %s",
+                         str(regs))
+            return []
+        elif isinstance(regs, str):
+            # redefine as a list
+            regs = [regs]
+
+        return regs
+
+    def check_reglist(self, regs):
+        """Check defined registries for illegal characters"""
+
+        regs = self.gen_reglist(regs)
+
+        if len(regs) == 0:
+            return False
+
+        for reg_string in regs:
+            if not reg_string[0].isalpha() or \
+                    self.check_reg_chars(reg_string) is None:
+                logger.error("Configuration: illegal character in registry '%s'", reg_string)
+                return False
+
+        return True
+
+    def _gen_regpath(self, registry_list):
+        """Return resolved registry based on container engine and container_uri option"""
+
+        registry_list = self.gen_reglist(registry_list)
+        if len(registry_list) == 0:
+            sys.exit(1) # invalid registry specification
+
+        # check that the selected format self.curi is in the registry list
+        if self.curi != "":
+            if self.curi in self.valid_curis[self.cec]:
+                curi_list = [self.curi]
+            else:
+                logger.error("Requested container_uri '%s' not supported by container engine '%s'.",
+                             self.curi, self.cec)
                 sys.exit(1)
+        else:
+            curi_list = self.valid_curis[self.cec]
+        found_valid_uri = False
 
-        found_valid = False
-        for uri in valid_uris:
-            if reg_url.find(uri + '://') == 0:
-                found_valid = True
-                reg_path = reg_url[len(uri) + 3:]
+        for allowed_curi in curi_list:
+            for candidate_registry in registry_list:
+                if candidate_registry.find(allowed_curi + '://') == 0:
+                    found_valid_uri = True
+                    logger.debug("Found uri %s in url %s", allowed_curi, candidate_registry)
+                    break
+            if found_valid_uri:
                 break
 
-        if not found_valid:
-            logger.error("Invalid URI specification in registry path: %s", reg_url)
+        if found_valid_uri is False:
+            logger.error("URI specification unavailable in registry list: %s.  Supported/requested registry types: %s",
+                         registry_list, curi_list)
             sys.exit(1)
 
-        if self.cec == 'docker' and uri != 'docker':
-            logger.error("Only docker registry URI (docker://) supported for Docker runs.")
-            sys.exit(1)
-        return reg_path if (self.cec == 'docker' or uri == 'dir') else reg_url
+        return candidate_registry
+
+    def _drop_uri(self, path):
+        """In some cases the uri needs to be dropped
+           when cec is docker: docker://
+           when cec is apptainer: dir://
+        """
+        drops = {'singularity': ['dir'], 'docker': ['docker']}
+
+        for uri in drops[self.cec]:
+            if path.find(uri + '://') == 0:
+                return path[len(uri) + 3:]
+
+        return path
 
     def _proc_results(self, benchmark):
+        """Process benchmark results"""
 
         results = {}
         bench_conf = self.confobj['benchmarks'][benchmark]
@@ -342,6 +455,7 @@ class HEPscore():
         return final_result
 
     def _container_rm(self, image):
+        """Remove container image"""
         if self.clean is False:
             return False
 
@@ -396,7 +510,7 @@ class HEPscore():
             return False
 
     def _get_usernamespace_flag(self):
-        """User namespace flag needed to support nested singularity."""
+        """User namespace flag needed to support nested singularity"""
         if self.cec == "singularity" and self.userns is True:
             if self.check_userns():
                 logger.debug("System supports user namespaces, enabling in singularity call")
@@ -416,14 +530,14 @@ class HEPscore():
 
     def _get_unsquash_flag(self):
         """If we're running in apptainer that supports it, pass --unsquash"""
-        if self.check_userns() and self.check_unsquash():
+        if os.getuid()!=0 and self.check_userns() and self.check_unsquash():
             logger.debug("Enabling --unsquash flag in singularity call")
             return "--unsquash "
         else:
             return ""
 
     def get_version(self):
-        """Report version of containment choice.
+        """Report version of containment choice
 
         Returns:
             str: Version as reported by containment (eg `singularity --version`)
@@ -457,13 +571,14 @@ class HEPscore():
         return ['unknown', '0.0']
 
     def _run_benchmark(self, benchmark, mock):
-
+        """Run a benchark from the configuration"""
         bench_conf = self.confobj['benchmarks'][benchmark]
+        # Arguments of each workload that are ignored
+        bad_args = [ "resultsdir",  "--resultsdir", "-w", "-W"]
         options_string = " -W"
-        output_logs = ['']
+        output_logs = []
         bmark_keys = ''
         bmark_registry = self.registry
-        bmark_reg_url = self.confobj['settings']['registry']
         result = 0
         gpu_flag = ""
         cmdf = None
@@ -480,9 +595,8 @@ class HEPscore():
 
         # Allow registry overrides in the benchmark configuration
         if 'registry' in bench_conf.keys():
-            bmark_reg_url = bench_conf['registry']
-            bmark_registry = self._gen_reg_path(bench_conf['registry'])
-            logger.info("Overriding registry for this container: %s", bmark_reg_url)
+            bmark_registry = self._drop_uri(bench_conf['registry'])
+            logger.info("Overriding registry for this container: %s", bench_conf['registry'])
 
         bcver = bench_conf['version']
         if self.addarch and self.cec == "singularity" and \
@@ -499,6 +613,8 @@ class HEPscore():
 
         if self.clean_files is True:
             options_string += " --mop all"
+            bad_args.extend(["mop", "--mop", "-m"])
+            logger.info("Option clean_all selected. Ignoring the corresponding mop parameter of the workloads")
 
         if 'gpu' in bench_conf and bench_conf['gpu'] is True:
             if self.cec == 'singularity':
@@ -506,24 +622,39 @@ class HEPscore():
             else:
                 gpu_flag = "--gpus all "
 
+        if self.ncores != 0:
+            logger.info("Enforcing run of each workload on only %s cores", self.ncores)
+            options_string += " --ncores %s" % self.ncores
+            bad_args.extend(["ncores", "--ncores", "-n"])
+
         for option in bmark_keys:
-            bad_args = ["mop", "resultsdir", "--mop", "--resultsdir", "-m", "-w", "-W"]
             option_arg = str(bench_conf['args'][option])
 
-            if re.match(r'^[a-zA-Z0-9\-_]*$', option) is None or \
-                    option in bad_args or \
-                    re.match(r'^[a-zA-Z0-9\-_]*$', option_arg) is None:
+            if self.check_chars(option) is None:
+                logger.error("Ignoring invalid option in YAML configuration: %s %s",
+                                                          option, option_arg)
+                continue
+            if option in bad_args :
+                logger.error("Ignoring option in the list of bad_args in YAML configuration: %s %s",
+                                                          option, option_arg)
+                continue
+            if option != "extra-args" and self.check_chars(option_arg) is None:
                 logger.error("Ignoring invalid option in YAML configuration: %s %s",
                              option, option_arg)
                 continue
+            
             if option_arg not in ['None', 'False']:
                 if option[0] != '-':
                     options_string = options_string + ' ' + '--' + option
                 else:
                     options_string = options_string + ' ' + option
-                if option_arg != 'True':
-                    options_string = options_string + ' ' + option_arg
 
+                if option_arg != 'True': #no empty argument field
+                    if option == 'extra-args':
+                        options_string = options_string + f" \'{option_arg}\'" 
+                    else:
+                        options_string = options_string + ' ' + option_arg
+                                
         try:
             lfile = open(log, mode='a')
         except OSError:
@@ -557,15 +688,16 @@ class HEPscore():
                              stat.S_IRWXG | stat.S_IRWXO)
 
             commands = {'docker': "docker run --rm --network=host -v " + run_dir
-                                  + ":/results " + gpu_flag,
+                                  + ":/results -v " + self.tmpdir + ":/tmp -v " + self.tmpdir
+                                  + ":/var/tmp " + gpu_flag,
                         'singularity': "singularity run -i -c -e -B " + run_dir
-                                       + ":/results -B /tmp "
+                                       + ":/results -B " + self.tmpdir + ":/tmp -B "
+                                       + self.tmpdir + ":/var/tmp "
                                        + self._get_unsquash_flag()
                                        + self._get_usernamespace_flag() + gpu_flag}
 
             command_string = commands[self.cec] + benchmark_complete
-            command = command_string.split(' ')
-
+            command = shlex.split(command_string)
             runstr = 'run' + str(i)
 
             logger.info("Starting %s", runstr)
@@ -596,12 +728,13 @@ class HEPscore():
 
                 line = cmdf.stdout.readline()
                 while line:
-                    output_logs.insert(0, line)
                     try:
-                        lfile.write(line.decode('utf-8'))
+                        decoded_line = line.decode('utf-8')
                     except UnicodeEncodeError:
                         # Ignore decode errors, for example from special characters
                         pass
+                    output_logs.insert(0, decoded_line)
+                    lfile.write(decoded_line)
                     lfile.flush()
                     line = cmdf.stdout.readline()
                     if line[-25:] == "no space left on device.\n":
@@ -616,8 +749,8 @@ class HEPscore():
                 self._check_return_code(cmdf.returncode)
                 if cmdf.returncode > 0:
                     logger.error("%s output logs:", self.cec)
-                    for line in list(reversed(output_logs))[-10:]:
-                        logger.error(line)
+                    for line in list(reversed(output_logs))[-100:]:
+                        logger.error(line.strip('\n'))
                 else:
                     successful_runs += 1
 
@@ -680,7 +813,7 @@ class HEPscore():
             self.confobj['status'] = 'success'
 
     def write_output(self, outtype, outfile=None):
-        """Writes summary results in selected `outtype` to `outfile`.
+        """Writes summary results in selected `outtype` to `outfile`
 
         Args:
             outtype (str): Output format. Either JSON(default) or YAML. Can be defined in
@@ -700,7 +833,7 @@ class HEPscore():
 
         outobj = {}
         if outtype == 'yaml':
-            outobj['hepscore_benchmark'] = self.confobj
+            outobj['hepscore'] = self.confobj
         elif outtype == 'json':
             outobj = self.confobj
         else:
@@ -713,6 +846,7 @@ class HEPscore():
             else:
                 jfile.write(json.dumps(outobj))
             jfile.close()
+            logger.debug("Output file with detailed results: %s",outfile)
         except OSError:
             logging.error("Failed to create summary output %s", outfile)
             sys.exit(2)
@@ -725,7 +859,7 @@ class HEPscore():
             sys.exit(2)
 
     def validate_conf(self):
-        """Parses constructor configuration dict for valid values.
+        """Parses constructor configuration dict for valid values
 
         Returns:
             dict: a valid dict (constructor dict if valid)
@@ -752,11 +886,8 @@ class HEPscore():
             if key == 'settings':
                 for subkey in self.confobj[key]:
                     if subkey == 'registry':
-                        reg_string = \
-                            self.confobj[key][subkey]
-                        if not reg_string[0].isalpha() or \
-                                re.match(r'^[a-zA-Z0-9:/\-_\.~]*$', reg_string) is None:
-                            logger.error("Configuration: illegal character in registry")
+                        # The registry can be a string or a list of strings
+                        if not self.check_reglist(self.confobj[key][subkey]):
                             sys.exit(1)
                     if subkey == 'method':
                         val = self.confobj[key][subkey]
@@ -795,7 +926,7 @@ class HEPscore():
                 self.confobj['benchmarks'].pop(benchmark, None)
                 continue
 
-            if re.match(r'^[a-zA-Z0-9\-_]*$', benchmark) is None:
+            if self.check_chars(benchmark) is None:
                 logger.error("Configuration: illegal character in benchmark name %s", benchmark)
                 sys.exit(1)
 
@@ -826,13 +957,16 @@ class HEPscore():
                 logger.error("Configuration: ref_scores missing for %s", benchmark)
                 sys.exit(1)
 
-            for pbkey in ['registry', 'results_file']:
-                if pbkey in bmark_conf.keys():
-                    if not bmark_conf[pbkey][0].isalpha() or \
-                            re.match(r'^[a-zA-Z0-9:/\-_\.~]*$', bmark_conf[pbkey]) is None:
-                        logger.error("Configuration: illegal character in %s - %s", pbkey,
-                                     bmark_conf[pbkey])
-                        sys.exit(1)
+            if 'results_file' in bmark_conf.keys():
+                if not bmark_conf['results_file'][0].isalpha() or \
+                        self.check_reg_chars(bmark_conf['results_file']) is None:
+                    logger.error("Configuration: illegal character in results_file - %s",
+                                 bmark_conf['results_file'])
+                    sys.exit(1)
+
+            if 'registry' in bmark_conf.keys():
+                if not self.check_reglist(bmark_conf['registry']):
+                    sys.exit(1)
 
         if bcount == 0:
             logger.error("Configuration: no benchmarks specified")
@@ -843,7 +977,7 @@ class HEPscore():
         return self.confobj
 
     def run(self, mock=False):
-        """Run the benchmarks defined in the constructor config dict.
+        """Run the benchmarks defined in the constructor config dict
 
         Args:
             mock (bool, optional): Skips the run call to the benchmarks, used for testing.
@@ -868,13 +1002,18 @@ class HEPscore():
 
         sysinfo = os.uname()
         sysname = ' '.join(sysinfo)
-        curtime = time.asctime()
+        starttime = time.time()
+        curtime = time.asctime(time.localtime(starttime))
 
         impl,ver = self.get_version()
         exec_ver = impl + "_version"
 
-        self.confobj['environment'] = {'system': sysname, 'arch': sysinfo.machine,
-                                       'start_at': curtime, exec_ver: ver}
+        self.confobj['environment'] = {'system': sysname, 
+                                       'arch': sysinfo.machine,
+                                       'start_at': curtime, 
+                                       exec_ver: ver,
+                                       'available_cores': len(os.sched_getaffinity(0)), # (BMK-1407)  
+                                        }
 
         logger.info("%s Benchmark", self.confobj['settings']['name'])
         logger.info("Config Hash:         %s", self.confobj['app_info']['config_hash'])
@@ -889,18 +1028,34 @@ class HEPscore():
         self.confobj['wl-scores'] = {}
         self.confobj['app_info']['hepscore_ver'] = __version__
 
-        if self.cec == 'singularity' and not mock:
-            try:
-                self.unpack = self.resultsdir + '/unpack'
-                logger.debug("Creating singularity unpack directory %s", self.unpack)
-                os.makedirs(self.unpack)
-                os.environ['SINGULARITY_TMPDIR'] = os.environ['APPTAINER_TMPDIR'] = self.unpack
-            except OSError:
-                logger.error("Failed to create Singularity unpack dir %s", self.unpack)
-                sys.exit(1)
-
         if mock is True:
             logging.info("NOTE: Replaying prior results")
+        else:
+            if self.cec == 'singularity':
+                bad_envs = ['SINGULARITY_BIND', 'SINGULARITY_BINDPATH', 'APPTAINER_BIND', 'APPTAINER_BINDPATH']
+
+                for be in bad_envs:
+                    if be in os.environ:
+                        logger.warning("Unsetting " + be + " environment variable")
+                        os.environ.pop(be)
+
+                try:
+                    self.unpack = self.resultsdir + '/unpack'
+                    logger.debug("Creating singularity unpack directory %s", self.unpack)
+                    os.makedirs(self.unpack)
+                    os.environ['SINGULARITY_TMPDIR'] = os.environ['APPTAINER_TMPDIR'] = self.unpack
+                except OSError:
+                    logger.error("Failed to create Singularity unpack dir %s", self.unpack)
+                    sys.exit(1)
+
+            try:
+                os.makedirs(self.tmpdir)
+                if self.cec == 'docker':
+                    os.chmod(self.tmpdir, stat.S_ISVTX | stat.S_IRWXU |
+                             stat.S_IRWXG | stat.S_IRWXO)
+            except:
+                logger.error("Failed to create tmpdir %s", self.tmpdir)
+                sys.exit(1)
 
         res = 0
         have_failure = False
@@ -922,14 +1077,24 @@ class HEPscore():
                 self.weights.append(1.0)
                 bench_conf['weight'] = 1.0
 
-        self.confobj['environment']['end_at'] = time.asctime()
+        endtime= time.time()
+        self.confobj['environment']['end_at'] = time.asctime(time.localtime(endtime))
+        self.confobj['environment']['duration'] = math.floor(endtime) - math.floor(starttime)
 
-        if self.cec == 'singularity' and not mock:
-            logger.debug("Removing singularity unpack directory %s", self.unpack)
+        if not mock:
             try:
-                os.rmdir(self.unpack)
-            except OSError:
-                logger.error("Failed to remove Singularity unpack dir %s", self.unpack)
+                os.rmdir(self.tmpdir)
+            except OSError as err:
+                if self.cec == 'docker':
+                    os.chmod(self.tmpdir, stat.S_IRWXU | stat.S_IRGRP |
+                             stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+
+            if self.cec == 'singularity':
+                logger.debug("Removing singularity unpack directory %s", self.unpack)
+                try:
+                    os.rmdir(self.unpack)
+                except OSError as err:
+                    logger.debug("Could not remove Singularity unpack dir %s - %s", self.unpack, err)
 
         if have_failure:
             logger.error("BENCHMARK FAILURE")

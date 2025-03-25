@@ -1,0 +1,55 @@
+{
+  "run_info": {
+    "copies": 8,
+    "threads_per_copy": 1,
+    "events_per_thread": 5,
+    "extra_arguments": ""
+  },
+  "report": {
+    "wl-scores": {
+      "gen-sim-reco": 2.491636949764224,
+      "gen": 29.630009501866414,
+      "sim": 7.949388883567246,
+      "reco": 5.8766332030199955
+    },
+    "wl-stats": {
+      "gen-sim-reco": {
+        "count": 8,
+        "max": 0.31887755102040816,
+        "avg": 0.311454618720528,
+        "median": 0.3125239276132079,
+        "min": 0.3004807692307692
+      },
+      "gen": {
+        "count": 8,
+        "max": 3.90625,
+        "avg": 3.703751187733302,
+        "median": 3.7175234936428962,
+        "min": 3.4246575342465753
+      },
+      "sim": {
+        "count": 8,
+        "max": 1.016260162601626,
+        "avg": 0.9936736104459057,
+        "median": 0.9960159362549803,
+        "min": 0.9652509652509652
+      },
+      "reco": {
+        "count": 8,
+        "max": 0.7610350076103504,
+        "avg": 0.7345791503774994,
+        "median": 0.737035347281062,
+        "min": 0.7052186177715093
+      }
+    },
+    "log": "ok"
+  },
+  "app": {
+    "version": "v2.0",
+    "description": "belle2-gen-sim-reco-ma-bmk",
+    "cvmfs_checksum": "7846542c20b1007c94c32ed6968b195a",
+    "bmkdata_checksum": "f6819b33382c8884a5a7f7bd948145e1",
+    "bmk_checksum": "0f53bc9bc803fb9ab80283cc3bbc67f8",
+    "containment": "singularity"
+  }
+}

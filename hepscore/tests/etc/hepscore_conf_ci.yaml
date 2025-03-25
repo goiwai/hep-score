@@ -1,20 +1,26 @@
-hepscore_benchmark:
+hepscore:
   settings:
     name: HEPscoreCI
     reference_machine: 'Unknown'
-    registry: docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+    registry:
+      - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+      - docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+      - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+    addarch: true
     scaling: 10
     repetitions: 2  #number of repetitions of the same benchmark
     method: geometric_mean #or any other algorithm
+    container_exec: singularity
+  options:
+    container_uri: oras
   benchmarks:
-    atlas-kv-bmk:
-      results_file: atlas-kv_summary.json
-      version: ci2.0
+    belle2-gen-sim-reco-ma-bmk:
+      results_file: belle2-gen-sim-reco-ma_summary.json
       ref_scores:
-        sim: 1
+        gen-sim-reco: 15.4
+      weight: 1.0
+      version: v2.0
       args:
-        events: 3
         threads: 1
-        copies: 2
+        events: 5
         debug: true
-
