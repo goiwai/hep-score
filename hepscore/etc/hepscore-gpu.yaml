@@ -10,9 +10,9 @@ hepscore:
         threads: 4
         copies: 1
         extra-args: '--device cuda 
-                     --n-objects 40000
-                     --batch-size 20000
-                     --n-model-instances 1 '
+                     --n-objects 500000
+                     --batch-size 50000
+                     --n-model-instances 5 '
   settings:
     name: HEPscore_GPU
     reference_machine: 'Unknown'
