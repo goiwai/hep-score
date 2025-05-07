@@ -7,12 +7,12 @@ hepscore:
         flowsim: 1
       version: ci-v0.2
       args:
-        threads: 4
+        threads: 1
         copies: 1
         extra-args: '
                      --device cuda 
-                     --n-objects 500000
-                     --batch-size 50000
+                     --n-objects 600000
+                     --batch-size 550000
                      --n-model-instances 5 
                     '
   settings:
