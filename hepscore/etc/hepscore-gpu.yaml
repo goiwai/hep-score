@@ -1,16 +1,16 @@
 hepscore:
   benchmarks:
-    cms-flowsim-bmk:
-      results_file: cms-flowsim_summary.json
+    cms-flowsim-gpu-bmk:
+      results_file: cms-flowsim-gpu_summary.json
       gpu: true
       ref_scores:
         flowsim: 1
       version: ci-v0.2
       args:
         threads: 1
-        copies: 1
         extra-args: '
-                     --device cuda 
+                     --mode gpu 
+                     --n-gpus -1
                      --n-objects 600000
                      --batch-size 550000
                      --n-model-instances 5 
