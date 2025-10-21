@@ -1,0 +1,25 @@
+hepscore:
+  benchmarks:
+    gen-madgraph-gpu-bmk:
+      results_file: gen-madgraph-gpu_summary.json
+      gpu: true
+      ref_scores:
+        gen-madgraph-gpu: 1
+      version: v0.1
+      args:
+        -M: 'gpu'
+        extra-args: ' 
+                     --n-gpus 1
+                    '
+  settings:
+    name: HEPscore_GPU
+    reference_machine: 'Unknown'
+    registry:
+      - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+      - docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+      - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+    addarch: true
+    scaling: 1  # tbd
+    repetitions: 1  # number of repetitions of the same benchmark
+    method: geometric_mean # or any other algorithm
+    container_exec: singularity
