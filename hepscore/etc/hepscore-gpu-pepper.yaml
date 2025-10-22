@@ -10,6 +10,7 @@ hepscore:
         -M: 'gpu'
         extra-args: '
                     --n-gpus 1
+                    --process g_g__t_tb_g_g_g
                     '
   settings:
     name: HEPscore_GPU
