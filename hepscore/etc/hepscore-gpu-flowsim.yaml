@@ -5,12 +5,11 @@ hepscore:
       gpu: true
       ref_scores:
         cms-flowsim-gpu: 1
-      version: v0.1
+      version: v0.3
       args:
         -M: 'gpu'
-        extra-args: '
-                     --n-gpus 1
-                    '
+        -c: 1
+        extra-args: ''
   settings:
     name: HEPscore_GPU
     reference_machine: 'Unknown'
