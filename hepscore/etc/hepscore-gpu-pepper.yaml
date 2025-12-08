@@ -5,12 +5,11 @@ hepscore:
       gpu: true
       ref_scores:
         gen-pepper-gpu: 1
-      version: v0.3
+      version: v0.4
       args:
         -M: 'gpu'
         extra-args: '
                     --n-gpus 1
-                    --process g_g__t_tb_g_g_g
                     '
   settings:
     name: HEPscore_GPU
