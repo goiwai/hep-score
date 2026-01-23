@@ -12,7 +12,7 @@ hepscore:
                     --n-gpus 1
                     '
   settings:
-    name: HEPscore_GPU
+    name: HEPscore_GPU_pepper_v0.4
     reference_machine: 'Unknown'
     registry:
       - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif

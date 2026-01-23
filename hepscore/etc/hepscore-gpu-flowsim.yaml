@@ -11,7 +11,7 @@ hepscore:
         -c: 1
         extra-args: ''
   settings:
-    name: HEPscore_GPU
+    name: HEPscore_GPU_flowsim_v0.3
     reference_machine: 'Unknown'
     registry:
       - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
