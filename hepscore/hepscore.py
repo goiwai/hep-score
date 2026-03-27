@@ -530,7 +530,7 @@ class HEPscore():
 
     def _get_unsquash_flag(self):
         """If we're running in apptainer that supports it, pass --unsquash"""
-        if os.getuid()!=0 and self.check_userns() and self.check_unsquash():
+        if self.check_userns() and self.check_unsquash():
             logger.debug("Enabling --unsquash flag in singularity call")
             return "--unsquash "
         else:
