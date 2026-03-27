@@ -688,11 +688,9 @@ class HEPscore():
                              stat.S_IRWXG | stat.S_IRWXO)
 
             commands = {'docker': "docker run --rm --network=host -v " + run_dir
-                                  + ":/results -v " + self.tmpdir + ":/tmp -v " + self.tmpdir
-                                  + ":/var/tmp " + gpu_flag,
+                                  + ":/results " + gpu_flag,
                         'singularity': "singularity run -i -c -e -B " + run_dir
-                                       + ":/results -B " + self.tmpdir + ":/tmp -B "
-                                       + self.tmpdir + ":/var/tmp "
+                                       + ":/results -B /tmp "
                                        + self._get_unsquash_flag()
                                        + self._get_usernamespace_flag() + gpu_flag}
 
