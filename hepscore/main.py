@@ -107,6 +107,9 @@ def parse_args(args):
                         version="%(prog)s " + hepscore.__version__)
     parser.add_argument("-v", "--verbose", action='store_true',
                         help="enables verbose mode. Display debug messages.")
+    parser.add_argument("-g", "--gpu_vendor", nargs='?', default=None, 
+                        help="GPU vendor. Valid options are nvidia and amd (not case-sensitive). "
+                             "If not specified, hepscore will attempt to auto-detect the GPU vendor")
 
     arg_dict = vars(parser.parse_args(args))
     return arg_dict
