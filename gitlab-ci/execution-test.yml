@@ -15,7 +15,7 @@ hw-sing-x86:
     # so that the configs nproc, nproc_conf, default will use 8
     # independently from the number of cores in the runners
     - nproc; taskset -ac 0-7 nproc  # just as a crosscheck
-    - taskset -ac 0-7 $CI_PROJECT_DIR/hepscore/tests/ci_hello_world.sh $container_exec $container_uri $ncores /tmp/HEPSCORE/$CI_JOB_ID | tee helloworld_out_$CI_JOB_ID.log
+    - $CI_PROJECT_DIR/hepscore/tests/ci_hello_world.sh $container_exec $container_uri $ncores /tmp/HEPSCORE/$CI_JOB_ID | tee helloworld_out_$CI_JOB_ID.log  # "taskset -ac 0-7" was removed due to issues with 10c runners [BMK-2009]
   after_script:
     - tar -czf hep-score-test.tgz /tmp/HEPSCORE/$CI_JOB_ID
   rules:
