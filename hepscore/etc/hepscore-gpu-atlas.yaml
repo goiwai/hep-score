@@ -1,0 +1,24 @@
+hepscore:
+  benchmarks:
+    atlas-fullsim-gpu-bmk:
+      results_file: atlas-fullsim-gpu_summary.json
+      gpu: true
+      ref_scores:
+        atlas-fullsim-gpu: 0.257
+      version: v0.1
+      args:
+        extra-args: '
+                    --instances-per-copy 1
+                    '
+  settings:
+    name: HEPscore_GPU_atlas
+    reference_machine: 'Unknown'
+    registry:
+      - oras://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads-sif
+      - docker://gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+      - dir:///cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/hep-benchmarks/hep-workloads
+    addarch: true
+    scaling: 1  # tbd
+    repetitions: 1  # number of repetitions of the same benchmark
+    method: geometric_mean # or any other algorithm
+    container_exec: singularity
