@@ -570,6 +570,94 @@ class HEPscore():
             logger.error("Could not locate %s on the system. Please check your path!", self.cec)
         return ['unknown', '0.0']
 
+    def _detect_gpu_vendor(self):
+        path = shutil.which("lspci")
+
+        if path is None:
+            logger.warning("lspci not found, please install for reliable GPU auto-detection")
+            logger.warning("Attempting less reliable methods")
+        else:
+            p = subprocess.run('lspci | grep \'\[AMD/ATI\].*\[\' | grep -i -v audio | wc -l', shell=True, check=True, capture_output=True, encoding='utf-8')
+            ngpus_amd = int(p.stdout)
+
+            p = subprocess.run('lspci | grep -c NVIDIA', shell=True, check=True, capture_output=True, encoding='utf-8')
+            ngpus_nvidia = int(p.stdout)
+
+            if ngpus_nvidia == 0 and ngpus_amd > 0:
+                if ngpus_amd == 1:
+                    logger.info("%d AMD GPU found by lspci", ngpus_amd)
+                elif ngpus_amd > 1:
+                    logger.info("%d AMD GPUs found by lspci", ngpus_amd)
+
+                logger.info("Setting GPU vendor to AMD")
+                return "amd"
+            elif ngpus_nvidia > 0 and ngpus_amd == 0:
+                if ngpus_nvidia == 1:
+                    logger.info("%d NVIDIA GPU found by lspci", ngpus_nvidia)
+                elif ngpus_nvidia > 1:
+                    logger.info("%d NVIDIA GPUs found by lspci", ngpus_nvidia)
+                    
+                logger.info("Setting GPU vendor to NVIDIA")
+                return "nvidia"
+            elif ngpus_nvidia > 0 and ngpus_amd > 0:
+                logger.warning("Both AMD and nvidia GPUs found by lspci, this configuration is not supported; unexpected behaviour may occur")
+                logger.info("Setting GPU vendor to default (NVIDIA)")
+                return "nvidia"
+            else:
+                logger.info("No GPUs found by lspci, benchmark will run in CPU-only mode")
+                logger.info("Setting GPU vendor to default value (NVIDIA)")
+                return "nvidia"
+
+        # Only get here if lspci wasn't found
+        path_amd = shutil.which("rocm-smi")
+        path_nvidia = shutil.which("nvidia-smi")
+        if path_amd is None and path_nvidia is not None:
+            logger.info("nvidia-smi found and rocm-smi not found, concluding GPU is NVIDIA")
+            return "nvidia"
+        elif path_amd is not None and path_nvidia is None:
+            logger.info("rocm-smi found and nvidia-smi not found, concluding GPU is AMD")
+            return "amd"
+        else:
+            logger.info("Unable to determine GPU vendor from installed drivers")
+            logger.info("Attempting to find cards in /dev/")
+
+        files = glob.glob("/dev/nvidia*")
+        nvidia_cards = []
+        for file in files:
+            if re.search(r'/dev/nvidia[0-9]+', file):
+                nvidia_cards.append(file)
+
+        files = glob.glob("/dev/dri/card*")
+        amd_cards = []
+        for file in files:
+            if re.search(r'/dev/dri/card[0-9]+', file):
+                amd_cards.append(file)
+
+        if len(nvidia_cards) > 0 and len(amd_cards) == 0:
+            if len(nvidia_cards) == 1:
+                logger.info("%d nvidia GPU found in /dev/", len(nvidia_cards))
+            else:
+                logger.info("%d nvidia GPUs found in /dev/", len(nvidia_cards))
+            logger.info("Setting GPU vendor to NVIDIA")
+            return "nvidia"
+        elif len(nvidia_cards) == 0 and len(amd_cards) > 0:
+            if len(amd_cards) == 1:
+                logger.info("%d AMD GPU found in /dev/", len(amd_cards))
+            else:
+                logger.info("%d AMD GPUs found in /dev/", len(amd_cards))
+            logger.info("Setting GPU vendor to AMD")
+            return "amd"
+        # Make this a warning for now
+        elif len(nvidia_cards) > 0 and len(amd_cards) > 0:
+            logger.warning("Both AMD and nvidia GPUs found in /dev/, this configuration is not supported; unexpected behaviour may occur")
+            logger.warning("If running on a VM, this may be a false positive")
+            logger.warning("Setting GPU vendor to default (NVIDIA)")
+            return "nvidia"
+            #sys.exit(1)
+        else:
+            logger.info("Unable to determine GPU vendor. Setting to default (NVIDIA)")
+            return "nvidia"
+
     def _run_benchmark(self, benchmark, mock):
         """Run a benchark from the configuration"""
         bench_conf = self.confobj['benchmarks'][benchmark]
@@ -599,9 +687,8 @@ class HEPscore():
             logger.info("Overriding registry for this container: %s", bench_conf['registry'])
 
         bcver = bench_conf['version']
-        if self.addarch and self.cec == "singularity" and \
-                bmark_registry.find("docker://") != 0:
-            bcver = bcver + "_" + self.confobj['environment']['arch']
+        # No longer using multi-arch images for docker
+        bcver = bcver + "_" + self.confobj['environment']['arch']
 
         tmp = "Executing " + str(runs) + " run"
         if runs > 1:
@@ -660,6 +747,33 @@ class HEPscore():
         except OSError:
             logger.error("failure to open %s", log)
             return -1
+
+        vendor = ""
+        if "gpu" in benchmark:
+            if "gpu_vendor" in self.options.keys() and self.options["gpu_vendor"] is not None:
+                vendor = self.options["gpu_vendor"].lower()
+                if vendor == "amd" or vendor == "nvidia":
+                    logger.info("GPU vendor specified on command line, setting to %s", vendor)
+                else:
+                    logger.warning("Invalid GPU vendor specified, setting to NVIDIA")
+                    vendor = "nvidia"
+            else:
+                vendor = self._detect_gpu_vendor()
+
+            if vendor == "nvidia":
+                path = shutil.which("nvidia-smi")
+
+                if path is None:
+                    logger.warning("NVIDIA GPU detected but nvidia-smi not found")
+                if "nvidia" not in bcver:
+                    bcver += "_nvidia"
+            elif vendor == "amd":
+                path = shutil.which("rocm-smi")
+
+                if path is None:
+                    logger.warning("AMD GPU detected but rocm-smi not found")
+                if "amd" not in bcver:
+                    bcver += "_amd"
 
         benchmark_name = bmark_registry + '/' + benchmark + ':' + bcver
         benchmark_complete = benchmark_name + options_string
