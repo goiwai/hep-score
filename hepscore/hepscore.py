@@ -624,7 +624,7 @@ class HEPscore():
 
         if self.ncores != 0:
             logger.info("Enforcing run of each workload on only %s cores", self.ncores)
-            options_string += " --ncores %s" % self.ncores
+            options_string += " --copies %s" % self.ncores
             bad_args.extend(["ncores", "--ncores", "-n"])
 
         for option in bmark_keys:
